@@ -1,0 +1,73 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Update="Http\HttpRequestSource.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Http\HttpResponseSource.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Http\HttpSocketHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\ISocket.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\ISocketStreamProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketBufferedStream.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketDataBag.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketEventArgs.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketHandler16.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketHandler32.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketHeadContentHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketNetworkStreamProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketProcessContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketReceiveContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketSendContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketTcpBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketTcpClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketTcpListener.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketUdpClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Sockets\SocketUdpHost.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
+</Project>
