@@ -1,0 +1,801 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="origin-when-cross-origin" />
+    <meta name="keywords" content="Socket,TCP,异步,C#" />
+    <meta name="description" content="上一篇中，我们编写了客户端功能。 这一篇将讲解ISocketHandler的实现。 再来回顾一下ISocketHandler接口。 做一个类SocketHandler继承ISocketHandler接口 增加两个属性与构造函数。 StateSet可以保存我们的异步调用结果等数据 SendQueue用" />
+    <meta property="og:description" content="上一篇中，我们编写了客户端功能。 这一篇将讲解ISocketHandler的实现。 再来回顾一下ISocketHandler接口。 做一个类SocketHandler继承ISocketHandler接口 增加两个属性与构造函数。 StateSet可以保存我们的异步调用结果等数据 SendQueue用" />
+    <meta http-equiv="Cache-Control" content="no-transform" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>[C#]手把手教你打造Socket的TCP通讯连接（二） - Kation - 博客园</title>
+    <link rel="canonical" href="https://www.cnblogs.com/Kation/archive/2013/03/06/2947145.html" />
+    <link rel="shortcut icon" id="favicon" href="//assets.cnblogs.com/favicon.svg?v=2" type="image/svg+xml" />
+    
+    <link rel="stylesheet" href="/css/blog-common.min.css?v=-mZhXFHa0uDrHqL2Jy3P_Ypnzbu7VbakbFUKQtkILK4" />
+    
+
+    <link id="MainCss" rel="stylesheet" href="/skins/imetro_hd/bundle-imetro_hd.min.css?v=wne9TN__Bg9zy1rh_qBKAPDZOSBX750zwWYFofUhygY" />
+        <link id="highlighter-theme-cnblogs" type="text/css" rel="stylesheet" href="/css/hljs/cnblogs.css?v=5J1NDtbnnIr2Rc2SdhEMlMxD4l9Eydj88B31E7_NhS4" />
+    
+    
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="/skins/imetro_hd/bundle-imetro_hd-mobile.min.css?v=x0YhikK_BBXEHPmhud6fHTRt3Xn8ULRsBVaa_7DgdzI" />
+    
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/Kation/rss" />
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/Kation/rsd.xml" />
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/Kation/wlwmanifest.xml" />
+    <script>
+        var currentBlogId = 143417;
+        var currentBlogApp = 'Kation';
+        var isLogined = false;
+        var isBlogOwner = false;
+        var skinName = 'iMetro_HD';
+        var visitorUserId = '';
+        var hasCustomScript = false;
+        window.cb_enable_mathjax = false;
+        window.mathEngine = 0;
+        window.codeHighlightEngine = 1;
+        window.enableCodeLineNumber = false;
+        window.codeHighlightTheme = 'cnblogs';
+        window.darkModeCodeHighlightTheme = 'vs2015';
+        window.isDarkCodeHighlightTheme = false;
+        window.isDarkModeCodeHighlightThemeDark = true;
+        window.isDisableCodeHighlighter = false;
+        window.enableCodeThemeTypeFollowSystem = false;
+        window.enableMacStyleCodeBlock = false;
+    </script>
+        <script>
+            window.currentPostId = 2947145;
+            window.currentPostDateAdded = '2013-03-06 22:49';
+        </script>
+    <script src="https://assets.cnblogs.com/scripts/jquery-3.3.1.min.js"></script>
+    <script src="https://cdn-www.cnblogs.com/js/blog-common.min.js?v=b5yGb-FOwKkaq21h4OOcZavZMqGnm559rwIQzlyECqc"></script>
+    
+</head>
+<body class="skin-imetro_hd has-navbar has-bannerbar">
+    <a name="top"></a>
+        <a href="https://www.cnblogs.com/cmt/p/18226431" onclick="countCreativeClicks('C0-阿里云-征文活动')" target="_blank" rel="nofollow">
+            <div class="bannerbar forpc" style="background-size: contain;background-image: url(https://img2024.cnblogs.com/blog/35695/202405/35695-20240524121614762-1692171159.jpg);padding-left: 15px;">
+                <img src="https://img2024.cnblogs.com/blog/35695/202405/35695-20240521130941177-794658493.jpg" style="" onload="countCreativeImpressions('C0-阿里云-征文活动')" />
+                
+                
+                <span id="c0_impression" style="display:none"></span>
+            </div>
+        </a>
+    <div id="top_nav" class="navbar forpc">
+        <nav id="nav_main" class="navbar-main">
+            <ul id="nav_left" class="navbar-list navbar-left">
+                <li class="navbar-branding">
+                    <a href="https://www.cnblogs.com/" title="开发者的网上家园" role="banner">
+                        <img src="//assets.cnblogs.com/logo.svg" alt="博客园Logo" />
+                    </a>
+                </li>
+                <li><a href="https://cnblogs.vip/">会员</a></li>
+                <li><a href="https://www.cnblogs.com/cmt/p/18219378">T恤</a></li>
+                <li>
+                    <a href="https://news.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-news')">新闻</a>
+                </li>
+                <li>
+                    <a href="https://q.cnblogs.com/" onclick="countClicks('nav', 'skin-navbar-q')">博问</a>
+                </li>
+                    <li>
+                        <a href="https://ai.hanghang.com/page/4649915" target="_blank">AI培训</a>
+                    </li>
+                <li><a href="https://market.cnblogs.com" target="_blank">云市场</a></li>
+            </ul>
+            <ul id="nav_right" class="navbar-list navbar-right">
+                <li>
+                    <form id="zzk_search" class="navbar-search dropdown" action="https://zzk.cnblogs.com/s" method="get" role="search">
+                        <input name="w" id="zzk_search_input" placeholder="代码改变世界" type="search" tabindex="3" autocomplete="off" />
+                        <button id="zzk_search_button" onclick="window.navbarSearchManager.triggerActiveOption()">
+                            <img id="search_icon" class="focus-hidden" src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                            <img class="hidden focus-visible" src="//assets.cnblogs.com/icons/enter.svg" alt="搜索" />
+                        </button>
+                        <ul id="navbar_search_options" class="dropdown-menu quick-search-menu">
+                            <li tabindex="0" class="active" onclick="zzkSearch(event, document.getElementById('zzk_search_input').value)">
+                                <div class="keyword-wrapper">
+                                    <img src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                                    <div class="keyword"></div>
+                                </div>
+                                <span class="search-area">所有博客</span>
+                            </li>
+                                    <li tabindex="1" onclick="zzkBlogSearch(event, 'Kation', document.getElementById('zzk_search_input').value)">
+                                        <div class="keyword-wrapper">
+                                            <img src="//assets.cnblogs.com/icons/search.svg" alt="搜索" />
+                                            <div class="keyword"></div>
+                                        </div>
+                                        <span class="search-area">当前博客</span>
+                                    </li>
+                        </ul>
+                    </form>
+                </li>
+                <li id="navbar_login_status" class="navbar-list">
+                    <a class="navbar-user-info navbar-blog" href="https://i.cnblogs.com/EditPosts.aspx?opt=1" alt="写随笔" title="写随笔">
+                        <img id="new_post_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/newpost.svg" alt="写随笔" />
+                    </a>
+                    <a id="navblog-myblog-icon" class="navbar-user-info navbar-blog" href="https://passport.cnblogs.com/GetBlogApplyStatus.aspx" alt="我的博客" title="我的博客">
+                        <img id="myblog_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/myblog.svg" alt="我的博客" />
+                    </a>
+                    <a class="navbar-user-info navbar-message navbar-icon-wrapper" href="https://msg.cnblogs.com/" alt="短消息" title="短消息">
+                        <img id="msg_icon" class="navbar-icon" src="//assets.cnblogs.com/icons/message.svg" alt="短消息" />
+                        <span id="msg_count" style="display: none"></span>
+                    </a>
+                    <a id="navbar_lite_mode_indicator" data-current-page="blog" style="display: none" href="javascript:void(0)" alt="简洁模式" title="简洁模式启用，您在访问他人博客时会使用简洁款皮肤展示">
+                        <img class="navbar-icon" src="//assets.cnblogs.com/icons/lite-mode-on.svg" alt="简洁模式" />
+                    </a>
+                    <div id="user_info" class="navbar-user-info dropdown">
+                        <a class="dropdown-button" href="https://home.cnblogs.com/">
+                            <img id="user_icon" class="navbar-avatar" src="//assets.cnblogs.com/icons/avatar-default.svg" alt="用户头像" />
+                        </a>
+                        <div class="dropdown-menu">
+                            <a id="navblog-myblog-text" href="https://passport.cnblogs.com/GetBlogApplyStatus.aspx">我的博客</a>
+                            <a href="https://home.cnblogs.com/">我的园子</a>
+                            <a href="https://account.cnblogs.com/settings/account">账号设置</a>
+                            <a href="javascript:void(0)" id="navbar_lite_mode_toggle" title="简洁模式会使用简洁款皮肤显示所有博客">
+    简洁模式 <img id="navbar_lite_mode_on" src="/images/lite-mode-check.svg" class="hide" /><span id="navbar_lite_mode_spinner" class="hide">...</span>
+</a>
+                            <a href="javascript:void(0)" onclick="account.logout();">退出登录</a>
+                        </div>
+                    </div>
+                    <a class="navbar-anonymous" href="https://account.cnblogs.com/signup">注册</a>
+                    <a class="navbar-anonymous" href="javascript:void(0);" onclick="account.login()">登录</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    
+
+    <!--done-->
+<div id="home">
+<div id="header">
+	<div id="blogTitle">
+        <a id="lnkBlogLogo" href="https://www.cnblogs.com/Kation/"><img id="blogLogo" src="/skins/custom/images/logo.gif" alt="返回主页" /></a>		
+		
+<!--done-->
+<h1><a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="https://www.cnblogs.com/Kation">Kation</a>
+</h1>
+<h2>Wodsoft</h2>
+
+
+
+
+		
+	</div><!--end: blogTitle 博客的标题和副标题 -->
+	<div id="navigator">
+		
+<ul id="navList">
+<li><a id="blog_nav_sitehome" class="menu" href="https://www.cnblogs.com/">
+博客园</a>
+</li>
+<li>
+<a id="blog_nav_myhome" class="menu" href="https://www.cnblogs.com/Kation/">
+首页</a>
+</li>
+<li>
+
+<a id="blog_nav_newpost" class="menu" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">
+新随笔</a>
+</li>
+<li>
+<a id="blog_nav_contact" class="menu" href="https://msg.cnblogs.com/send/Kation">
+联系</a></li>
+<li>
+<a id="blog_nav_rss" class="menu" href="javascript:void(0)" data-rss="https://www.cnblogs.com/Kation/rss/">
+订阅</a>
+<!--<partial name="./Shared/_XmlLink.cshtml" model="Model" /></li>--></li>
+<li>
+<a id="blog_nav_admin" class="menu" href="https://i.cnblogs.com/">
+管理</a>
+</li>
+</ul>
+
+
+		<div class="blogStats">
+			<div id="blog_stats_place_holder"><script>loadBlogStats();</script></div>
+		</div><!--end: blogStats -->
+	</div><!--end: navigator 博客导航栏 -->
+</div><!--end: header 头部 -->
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		<div id="post_detail">
+    <!--done-->
+    <div id="topics">
+        <div class="post">
+            <h1 class = "postTitle">
+                <a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/Kation/archive/2013/03/06/2947145.html" title="发布于 2013-03-06 22:49">
+    <span role="heading" aria-level="2">[C#]手把手教你打造Socket的TCP通讯连接（二）</span>
+    
+
+</a>
+
+            </h1>
+            <div class="clear"></div>
+            <div class="postBody">
+                <div id="cnblogs_post_body" class="blogpost-body blogpost-body-html">
+<p><a href="http://www.cnblogs.com/Kation/archive/2013/03/06/2946761.html" rel="noopener">上一篇</a>中，我们编写了客户端功能。</p>
+<p>这一篇将讲解ISocketHandler的实现。</p>
+<p>再来回顾一下ISocketHandler接口。</p>
+<div class="cnblogs_code">
+<pre><span style="color: rgba(0, 0, 255, 1)">public</span> <span style="color: rgba(0, 0, 255, 1)">interface</span><span style="color: rgba(0, 0, 0, 1)"> ISocketHandler
+{
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 开始接收
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="stream"&gt;</span><span style="color: rgba(0, 128, 0, 1)">Socket网络流</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="callback"&gt;</span><span style="color: rgba(0, 128, 0, 1)">回调函数</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="state"&gt;</span><span style="color: rgba(0, 128, 0, 1)">自定义状态</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;returns&gt;</span><span style="color: rgba(0, 128, 0, 1)">异步结果</span><span style="color: rgba(128, 128, 128, 1)">&lt;/returns&gt;</span>
+    IAsyncResult BeginReceive(Stream stream, AsyncCallback callback, <span style="color: rgba(0, 0, 255, 1)">object</span><span style="color: rgba(0, 0, 0, 1)"> state);
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 结束接收
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="asyncResult"&gt;</span><span style="color: rgba(0, 128, 0, 1)">异步结果</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;returns&gt;</span><span style="color: rgba(0, 128, 0, 1)">接收到的数据</span><span style="color: rgba(128, 128, 128, 1)">&lt;/returns&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">byte</span><span style="color: rgba(0, 0, 0, 1)">[] EndReceive(IAsyncResult asyncResult);
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 开始发送
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="data"&gt;</span><span style="color: rgba(0, 128, 0, 1)">要发送的数据</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="offset"&gt;</span><span style="color: rgba(0, 128, 0, 1)">数据偏移</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="count"&gt;</span><span style="color: rgba(0, 128, 0, 1)">发送长度</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="stream"&gt;</span><span style="color: rgba(0, 128, 0, 1)">Socket网络流</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="callback"&gt;</span><span style="color: rgba(0, 128, 0, 1)">回调函数</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="state"&gt;</span><span style="color: rgba(0, 128, 0, 1)">自定义状态</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;returns&gt;</span><span style="color: rgba(0, 128, 0, 1)">异步结果</span><span style="color: rgba(128, 128, 128, 1)">&lt;/returns&gt;</span>
+    IAsyncResult BeginSend(<span style="color: rgba(0, 0, 255, 1)">byte</span>[] data, <span style="color: rgba(0, 0, 255, 1)">int</span> offset, <span style="color: rgba(0, 0, 255, 1)">int</span> count, Stream stream, AsyncCallback callback, <span style="color: rgba(0, 0, 255, 1)">object</span><span style="color: rgba(0, 0, 0, 1)"> state);
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 结束发送
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="asyncResult"&gt;</span><span style="color: rgba(0, 128, 0, 1)">异步结果</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;returns&gt;</span><span style="color: rgba(0, 128, 0, 1)">发送是否成功</span><span style="color: rgba(128, 128, 128, 1)">&lt;/returns&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">bool</span><span style="color: rgba(0, 0, 0, 1)"> EndSend(IAsyncResult asyncResult);
+}</span></pre>
+</div>
+<p>做一个类SocketHandler继承ISocketHandler接口</p>
+<div class="cnblogs_code">
+<pre><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+<span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> Socket处理程序
+</span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+<span style="color: rgba(0, 0, 255, 1)">public</span> <span style="color: rgba(0, 0, 255, 1)">class</span><span style="color: rgba(0, 0, 0, 1)"> SocketHandler : ISocketHandler
+{
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 开始接收
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="stream"&gt;</span><span style="color: rgba(0, 128, 0, 1)">Socket网络流</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="callback"&gt;</span><span style="color: rgba(0, 128, 0, 1)">回调函数</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="state"&gt;</span><span style="color: rgba(0, 128, 0, 1)">自定义状态</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;returns&gt;</span><span style="color: rgba(0, 128, 0, 1)">异步结果</span><span style="color: rgba(128, 128, 128, 1)">&lt;/returns&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> IAsyncResult BeginReceive(Stream stream, AsyncCallback callback, <span style="color: rgba(0, 0, 255, 1)">object</span><span style="color: rgba(0, 0, 0, 1)"> state)
+    {
+
+    }
+
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 结束接收
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="asyncResult"&gt;</span><span style="color: rgba(0, 128, 0, 1)">异步结果</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;returns&gt;</span><span style="color: rgba(0, 128, 0, 1)">接收到的数据</span><span style="color: rgba(128, 128, 128, 1)">&lt;/returns&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> <span style="color: rgba(0, 0, 255, 1)">byte</span><span style="color: rgba(0, 0, 0, 1)">[] EndReceive(IAsyncResult asyncResult)
+    {
+
+    }
+
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 开始发送
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="data"&gt;</span><span style="color: rgba(0, 128, 0, 1)">要发送的数据</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="offset"&gt;</span><span style="color: rgba(0, 128, 0, 1)">数据偏移</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="count"&gt;</span><span style="color: rgba(0, 128, 0, 1)">发送长度</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="stream"&gt;</span><span style="color: rgba(0, 128, 0, 1)">Socket网络流</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="callback"&gt;</span><span style="color: rgba(0, 128, 0, 1)">回调函数</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="state"&gt;</span><span style="color: rgba(0, 128, 0, 1)">自定义状态</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;returns&gt;</span><span style="color: rgba(0, 128, 0, 1)">异步结果</span><span style="color: rgba(128, 128, 128, 1)">&lt;/returns&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> IAsyncResult BeginSend(<span style="color: rgba(0, 0, 255, 1)">byte</span>[] data, <span style="color: rgba(0, 0, 255, 1)">int</span> offset, <span style="color: rgba(0, 0, 255, 1)">int</span> count, Stream stream, AsyncCallback callback, <span style="color: rgba(0, 0, 255, 1)">object</span><span style="color: rgba(0, 0, 0, 1)"> state)
+    {
+
+    }
+
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 结束发送
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="asyncResult"&gt;</span><span style="color: rgba(0, 128, 0, 1)">异步结果</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;returns&gt;</span><span style="color: rgba(0, 128, 0, 1)">发送是否成功</span><span style="color: rgba(128, 128, 128, 1)">&lt;/returns&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> <span style="color: rgba(0, 0, 255, 1)">bool</span><span style="color: rgba(0, 0, 0, 1)"> EndSend(IAsyncResult asyncResult)
+    {
+
+    }
+}</span></pre>
+</div>
+<p>增加两个属性与构造函数。</p>
+<div class="cnblogs_code">
+<pre>    <span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">异步处理关系集合</span>
+    <span style="color: rgba(0, 0, 255, 1)">private</span> Dictionary&lt;IAsyncResult, SocketHandlerState&gt;<span style="color: rgba(0, 0, 0, 1)"> StateSet;
+    </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">发送队列</span>
+    <span style="color: rgba(0, 0, 255, 1)">private</span> List&lt;SocketHandlerState&gt;<span style="color: rgba(0, 0, 0, 1)"> SendQueue;
+
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 实例化Socket处理程序
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span><span style="color: rgba(0, 0, 0, 1)"> SocketHandler()
+    {
+        StateSet </span>= <span style="color: rgba(0, 0, 255, 1)">new</span> Dictionary&lt;IAsyncResult, SocketHandlerState&gt;<span style="color: rgba(0, 0, 0, 1)">();
+        SendQueue </span>= <span style="color: rgba(0, 0, 255, 1)">new</span> List&lt;SocketHandlerState&gt;<span style="color: rgba(0, 0, 0, 1)">();
+    }</span></pre>
+</div>
+<p>StateSet可以保存我们的异步调用结果等数据</p>
+<p>SendQueue用来做一个发送队列</p>
+<p>接下来我们从发送数据开始。</p>
+<p>由于需要用到Stream的异步方法，我们需要定义一个State类。</p>
+<div class="cnblogs_code">
+<pre><span style="color: rgba(0, 0, 255, 1)">internal</span> <span style="color: rgba(0, 0, 255, 1)">class</span><span style="color: rgba(0, 0, 0, 1)"> SocketHandlerState
+{
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 数据
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> <span style="color: rgba(0, 0, 255, 1)">byte</span>[] Data { <span style="color: rgba(0, 0, 255, 1)">get</span>; <span style="color: rgba(0, 0, 255, 1)">set</span><span style="color: rgba(0, 0, 0, 1)">; }
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 异步结果
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> IAsyncResult AsyncResult { <span style="color: rgba(0, 0, 255, 1)">get</span>; <span style="color: rgba(0, 0, 255, 1)">set</span><span style="color: rgba(0, 0, 0, 1)">; }
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> Socket网络流
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> Stream Stream { <span style="color: rgba(0, 0, 255, 1)">get</span>; <span style="color: rgba(0, 0, 255, 1)">set</span><span style="color: rgba(0, 0, 0, 1)">; }
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 异步回调函数
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> AsyncCallback AsyncCallBack { <span style="color: rgba(0, 0, 255, 1)">get</span>; <span style="color: rgba(0, 0, 255, 1)">set</span><span style="color: rgba(0, 0, 0, 1)">; }
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 是否完成
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> <span style="color: rgba(0, 0, 255, 1)">bool</span> Completed { <span style="color: rgba(0, 0, 255, 1)">get</span>; <span style="color: rgba(0, 0, 255, 1)">set</span><span style="color: rgba(0, 0, 0, 1)">; }
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 数据长度
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> <span style="color: rgba(0, 0, 255, 1)">int</span> DataLength { <span style="color: rgba(0, 0, 255, 1)">get</span>; <span style="color: rgba(0, 0, 255, 1)">set</span><span style="color: rgba(0, 0, 0, 1)">; }
+}</span></pre>
+</div>
+<p>因为我们需要返回IAsyncResult，所以我们继承该接口做一个SocketAsyncResult类。</p>
+<div class="cnblogs_code">
+<pre><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+<span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> Socket异步操作状态
+</span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+<span style="color: rgba(0, 0, 255, 1)">public</span> <span style="color: rgba(0, 0, 255, 1)">class</span><span style="color: rgba(0, 0, 0, 1)"> SocketAsyncResult : IAsyncResult
+{
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 实例化Socket异步操作状态
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="state"&gt;&lt;/param&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> SocketAsyncResult(<span style="color: rgba(0, 0, 255, 1)">object</span><span style="color: rgba(0, 0, 0, 1)"> state)
+    {
+        AsyncState </span>=<span style="color: rgba(0, 0, 0, 1)"> state;
+        AsyncWaitHandle </span>= <span style="color: rgba(0, 0, 255, 1)">new</span> AutoResetEvent(<span style="color: rgba(0, 0, 255, 1)">false</span><span style="color: rgba(0, 0, 0, 1)">);
+    }
+
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 获取用户定义的对象，它限定或包含关于异步操作的信息。
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> <span style="color: rgba(0, 0, 255, 1)">object</span> AsyncState { <span style="color: rgba(0, 0, 255, 1)">get</span>; <span style="color: rgba(0, 0, 255, 1)">private</span> <span style="color: rgba(0, 0, 255, 1)">set</span><span style="color: rgba(0, 0, 0, 1)">; }
+
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 获取用于等待异步操作完成的 System.Threading.WaitHandle。
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> WaitHandle AsyncWaitHandle { <span style="color: rgba(0, 0, 255, 1)">get</span>; <span style="color: rgba(0, 0, 255, 1)">private</span> <span style="color: rgba(0, 0, 255, 1)">set</span><span style="color: rgba(0, 0, 0, 1)">; }
+
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 获取一个值，该值指示异步操作是否同步完成。
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> <span style="color: rgba(0, 0, 255, 1)">bool</span> CompletedSynchronously { <span style="color: rgba(0, 0, 255, 1)">get</span> { <span style="color: rgba(0, 0, 255, 1)">return</span> <span style="color: rgba(0, 0, 255, 1)">false</span><span style="color: rgba(0, 0, 0, 1)">; } }
+
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 获取一个值，该值指示异步操作是否已完成。
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> <span style="color: rgba(0, 0, 255, 1)">bool</span> IsCompleted { <span style="color: rgba(0, 0, 255, 1)">get</span>; <span style="color: rgba(0, 0, 255, 1)">internal</span> <span style="color: rgba(0, 0, 255, 1)">set</span><span style="color: rgba(0, 0, 0, 1)">; }
+}</span></pre>
+</div>
+<p>然后开始编写发送数据相关函数。</p>
+<p>这里我将发送数据的大小限制为最大65535。</p>
+<p>只需发送长度为2的头信息即可把数据长度发送到对方。</p>
+<div class="cnblogs_code">
+<pre>    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 开始发送
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="data"&gt;</span><span style="color: rgba(0, 128, 0, 1)">要发送的数据</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="offset"&gt;</span><span style="color: rgba(0, 128, 0, 1)">数据偏移</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="count"&gt;</span><span style="color: rgba(0, 128, 0, 1)">发送长度</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="stream"&gt;</span><span style="color: rgba(0, 128, 0, 1)">Socket网络流</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="callback"&gt;</span><span style="color: rgba(0, 128, 0, 1)">回调函数</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="state"&gt;</span><span style="color: rgba(0, 128, 0, 1)">自定义状态</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;returns&gt;</span><span style="color: rgba(0, 128, 0, 1)">异步结果</span><span style="color: rgba(128, 128, 128, 1)">&lt;/returns&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> IAsyncResult BeginSend(<span style="color: rgba(0, 0, 255, 1)">byte</span>[] data, <span style="color: rgba(0, 0, 255, 1)">int</span> offset, <span style="color: rgba(0, 0, 255, 1)">int</span> count, Stream stream, AsyncCallback callback, <span style="color: rgba(0, 0, 255, 1)">object</span><span style="color: rgba(0, 0, 0, 1)"> state)
+    {
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">data不能为null</span>
+        <span style="color: rgba(0, 0, 255, 1)">if</span> (data == <span style="color: rgba(0, 0, 255, 1)">null</span><span style="color: rgba(0, 0, 0, 1)">)
+            </span><span style="color: rgba(0, 0, 255, 1)">throw</span> <span style="color: rgba(0, 0, 255, 1)">new</span> ArgumentNullException(<span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(128, 0, 0, 1)">data</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(0, 0, 0, 1)">);
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">offset不能小于0和超过data长度</span>
+        <span style="color: rgba(0, 0, 255, 1)">if</span> (offset &gt; data.Length || offset &lt; <span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">)
+            </span><span style="color: rgba(0, 0, 255, 1)">throw</span> <span style="color: rgba(0, 0, 255, 1)">new</span> ArgumentOutOfRangeException(<span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(128, 0, 0, 1)">offset</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(0, 0, 0, 1)">);
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">count不能大于65535</span>
+        <span style="color: rgba(0, 0, 255, 1)">if</span> (count &lt;= <span style="color: rgba(128, 0, 128, 1)">0</span> || count &gt; data.Length - offset || count &gt; <span style="color: rgba(0, 0, 255, 1)">ushort</span><span style="color: rgba(0, 0, 0, 1)">.MaxValue)
+            </span><span style="color: rgba(0, 0, 255, 1)">throw</span> <span style="color: rgba(0, 0, 255, 1)">new</span> ArgumentOutOfRangeException(<span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(128, 0, 0, 1)">count</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(0, 0, 0, 1)">);
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">stream不能为null</span>
+        <span style="color: rgba(0, 0, 255, 1)">if</span> (stream == <span style="color: rgba(0, 0, 255, 1)">null</span><span style="color: rgba(0, 0, 0, 1)">)
+            </span><span style="color: rgba(0, 0, 255, 1)">throw</span> <span style="color: rgba(0, 0, 255, 1)">new</span> ArgumentNullException(<span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(128, 0, 0, 1)">stream</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(0, 0, 0, 1)">);
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">回调函数不能为null</span>
+        <span style="color: rgba(0, 0, 255, 1)">if</span> (callback == <span style="color: rgba(0, 0, 255, 1)">null</span><span style="color: rgba(0, 0, 0, 1)">)
+            </span><span style="color: rgba(0, 0, 255, 1)">throw</span> <span style="color: rgba(0, 0, 255, 1)">new</span> ArgumentNullException(<span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(128, 0, 0, 1)">callback</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(0, 0, 0, 1)">);
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">stream异常</span>
+        <span style="color: rgba(0, 0, 255, 1)">if</span> (!<span style="color: rgba(0, 0, 0, 1)">stream.CanWrite)
+            </span><span style="color: rgba(0, 0, 255, 1)">throw</span> <span style="color: rgba(0, 0, 255, 1)">new</span> ArgumentException(<span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(128, 0, 0, 1)">stream不支持写入。</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(0, 0, 0, 1)">);
+
+        SocketAsyncResult result </span>= <span style="color: rgba(0, 0, 255, 1)">new</span><span style="color: rgba(0, 0, 0, 1)"> SocketAsyncResult(state);
+
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">初始化SocketHandlerState</span>
+        SocketHandlerState shs = <span style="color: rgba(0, 0, 255, 1)">new</span><span style="color: rgba(0, 0, 0, 1)"> SocketHandlerState();
+        shs.Data </span>=<span style="color: rgba(0, 0, 0, 1)"> data;
+        shs.AsyncResult </span>=<span style="color: rgba(0, 0, 0, 1)"> result;
+        shs.Stream </span>=<span style="color: rgba(0, 0, 0, 1)"> stream;
+        shs.AsyncCallBack </span>=<span style="color: rgba(0, 0, 0, 1)"> callback;
+        shs.DataLength </span>= <span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">;
+
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">锁定SendQueue
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">避免多线程同时发送数据</span>
+        <span style="color: rgba(0, 0, 255, 1)">lock</span><span style="color: rgba(0, 0, 0, 1)"> (SendQueue)
+        {
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">添加状态</span>
+<span style="color: rgba(0, 0, 0, 1)">            SendQueue.Add(shs);
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">如果SendQueue数量大于1，则表示有数据尚未发送完成</span>
+            <span style="color: rgba(0, 0, 255, 1)">if</span> (SendQueue.Count &gt; <span style="color: rgba(128, 0, 128, 1)">1</span><span style="color: rgba(0, 0, 0, 1)">)
+                </span><span style="color: rgba(0, 0, 255, 1)">return</span><span style="color: rgba(0, 0, 0, 1)"> result;
+        }
+
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">获取数据长度
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">ushort的最大值为65535
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">转换为byte[]长度为2</span>
+        <span style="color: rgba(0, 0, 255, 1)">var</span> dataLength = BitConverter.GetBytes((<span style="color: rgba(0, 0, 255, 1)">ushort</span><span style="color: rgba(0, 0, 0, 1)">)data.Length);
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">向对方发送长度为2的头信息，表示接下来要发送的数据长度</span>
+        stream.Write(dataLength, <span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">, dataLength.Length);
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">开始异步发送数据</span>
+        stream.BeginWrite(shs.Data, <span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">, shs.Data.Length, EndWrite, shs).AsyncWaitHandle.WaitOne();
+
+        </span><span style="color: rgba(0, 0, 255, 1)">return</span><span style="color: rgba(0, 0, 0, 1)"> result;
+    }
+
+    </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">stream异步结束写入</span>
+    <span style="color: rgba(0, 0, 255, 1)">private</span> <span style="color: rgba(0, 0, 255, 1)">void</span><span style="color: rgba(0, 0, 0, 1)"> EndWrite(IAsyncResult ar)
+    {
+        SocketHandlerState state </span>=<span style="color: rgba(0, 0, 0, 1)"> (SocketHandlerState)ar.AsyncState;
+
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">锁定StateSet</span>
+        <span style="color: rgba(0, 0, 255, 1)">lock</span><span style="color: rgba(0, 0, 0, 1)"> (StateSet)
+            StateSet.Add(state.AsyncResult, state);
+
+        </span><span style="color: rgba(0, 0, 255, 1)">try</span><span style="color: rgba(0, 0, 0, 1)">
+        {
+            state.Stream.EndWrite(ar);
+        }
+        </span><span style="color: rgba(0, 0, 255, 1)">catch</span><span style="color: rgba(0, 0, 0, 1)">
+        {
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">出现Socket异常，发送失败</span>
+            state.Completed = <span style="color: rgba(0, 0, 255, 1)">false</span><span style="color: rgba(0, 0, 0, 1)">;
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">允许等待线程继续</span>
+<span style="color: rgba(0, 0, 0, 1)">            ((AutoResetEvent)state.AsyncResult.AsyncWaitHandle).Set();
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">执行异步回调函数</span>
+<span style="color: rgba(0, 0, 0, 1)">            state.AsyncCallBack(state.AsyncResult);
+            </span><span style="color: rgba(0, 0, 255, 1)">return</span><span style="color: rgba(0, 0, 0, 1)">;
+        }
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">发送成功</span>
+        state.Completed = <span style="color: rgba(0, 0, 255, 1)">true</span><span style="color: rgba(0, 0, 0, 1)">;
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">允许等待线程继续</span>
+<span style="color: rgba(0, 0, 0, 1)">        ((AutoResetEvent)state.AsyncResult.AsyncWaitHandle).Set();
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">执行异步回调函数</span>
+<span style="color: rgba(0, 0, 0, 1)">        state.AsyncCallBack(state.AsyncResult);
+
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">锁定SendQueue</span>
+        <span style="color: rgba(0, 0, 255, 1)">lock</span><span style="color: rgba(0, 0, 0, 1)"> (SendQueue)
+        {
+            SocketHandlerState prepare </span>= <span style="color: rgba(0, 0, 255, 1)">null</span><span style="color: rgba(0, 0, 0, 1)">;
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">移除当前发送完成的数据</span>
+<span style="color: rgba(0, 0, 0, 1)">            SendQueue.Remove(state);
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">如果SendQueue还有数据存在，则继续发送</span>
+            <span style="color: rgba(0, 0, 255, 1)">if</span> (SendQueue.Count &gt; <span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">)
+            {
+                prepare </span>= SendQueue[<span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">];
+            }
+            </span><span style="color: rgba(0, 0, 255, 1)">if</span> (prepare != <span style="color: rgba(0, 0, 255, 1)">null</span><span style="color: rgba(0, 0, 0, 1)">)
+            {
+                </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">获取数据长度
+                </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">ushort的最大值为65535
+                </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">转换为byte[]长度为2</span>
+                <span style="color: rgba(0, 0, 255, 1)">var</span> dataLength = BitConverter.GetBytes((<span style="color: rgba(0, 0, 255, 1)">ushort</span><span style="color: rgba(0, 0, 0, 1)">)prepare.Data.Length);
+                </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">向对方发送长度为2的头信息，表示接下来要发送的数据长度</span>
+                prepare.Stream.Write(dataLength, <span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">, dataLength.Length);
+                </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">开始异步发送数据</span>
+                prepare.Stream.BeginWrite(prepare.Data, <span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">, prepare.Data.Length, EndWrite, prepare).AsyncWaitHandle.WaitOne();
+            }
+        }
+    }
+
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 结束发送
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="asyncResult"&gt;</span><span style="color: rgba(0, 128, 0, 1)">异步结果</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;returns&gt;</span><span style="color: rgba(0, 128, 0, 1)">发送是否成功</span><span style="color: rgba(128, 128, 128, 1)">&lt;/returns&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> <span style="color: rgba(0, 0, 255, 1)">bool</span><span style="color: rgba(0, 0, 0, 1)"> EndSend(IAsyncResult asyncResult)
+    {
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">判断异步操作状态是否属于当前处理程序</span>
+        <span style="color: rgba(0, 0, 255, 1)">if</span> (!<span style="color: rgba(0, 0, 0, 1)">StateSet.ContainsKey(asyncResult))
+            </span><span style="color: rgba(0, 0, 255, 1)">throw</span> <span style="color: rgba(0, 0, 255, 1)">new</span> ArgumentException(<span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(128, 0, 0, 1)">无法识别的asyncResult。</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(0, 0, 0, 1)">);
+        SocketHandlerState state </span>=<span style="color: rgba(0, 0, 0, 1)"> StateSet[asyncResult];
+        </span><span style="color: rgba(0, 0, 255, 1)">lock</span><span style="color: rgba(0, 0, 0, 1)"> (StateSet)
+            StateSet.Remove(asyncResult);
+        </span><span style="color: rgba(0, 0, 255, 1)">return</span><span style="color: rgba(0, 0, 0, 1)"> state.Completed;
+    }</span></pre>
+</div>
+<p>接下来是接收数据的相关方法。</p>
+<div class="cnblogs_code">
+<pre>    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 开始接收
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="stream"&gt;</span><span style="color: rgba(0, 128, 0, 1)">Socket网络流</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="callback"&gt;</span><span style="color: rgba(0, 128, 0, 1)">回调函数</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="state"&gt;</span><span style="color: rgba(0, 128, 0, 1)">自定义状态</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;returns&gt;</span><span style="color: rgba(0, 128, 0, 1)">异步结果</span><span style="color: rgba(128, 128, 128, 1)">&lt;/returns&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> IAsyncResult BeginReceive(Stream stream, AsyncCallback callback, <span style="color: rgba(0, 0, 255, 1)">object</span><span style="color: rgba(0, 0, 0, 1)"> state)
+    {
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">stream不能为null</span>
+        <span style="color: rgba(0, 0, 255, 1)">if</span> (stream == <span style="color: rgba(0, 0, 255, 1)">null</span><span style="color: rgba(0, 0, 0, 1)">)
+            </span><span style="color: rgba(0, 0, 255, 1)">throw</span> <span style="color: rgba(0, 0, 255, 1)">new</span> ArgumentNullException(<span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(128, 0, 0, 1)">stream</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(0, 0, 0, 1)">);
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">回调函数不能为null</span>
+        <span style="color: rgba(0, 0, 255, 1)">if</span> (callback == <span style="color: rgba(0, 0, 255, 1)">null</span><span style="color: rgba(0, 0, 0, 1)">)
+            </span><span style="color: rgba(0, 0, 255, 1)">throw</span> <span style="color: rgba(0, 0, 255, 1)">new</span> ArgumentNullException(<span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(128, 0, 0, 1)">callback</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(0, 0, 0, 1)">);
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">stream异常</span>
+        <span style="color: rgba(0, 0, 255, 1)">if</span> (!<span style="color: rgba(0, 0, 0, 1)">stream.CanRead)
+            </span><span style="color: rgba(0, 0, 255, 1)">throw</span> <span style="color: rgba(0, 0, 255, 1)">new</span> ArgumentException(<span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(128, 0, 0, 1)">stream不支持读取。</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(0, 0, 0, 1)">);
+
+        SocketAsyncResult result </span>= <span style="color: rgba(0, 0, 255, 1)">new</span><span style="color: rgba(0, 0, 0, 1)"> SocketAsyncResult(state);
+
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">初始化SocketHandlerState</span>
+        SocketHandlerState shs = <span style="color: rgba(0, 0, 255, 1)">new</span><span style="color: rgba(0, 0, 0, 1)"> SocketHandlerState();
+        shs.Data </span>= <span style="color: rgba(0, 0, 255, 1)">new</span> <span style="color: rgba(0, 0, 255, 1)">byte</span>[<span style="color: rgba(128, 0, 128, 1)">2</span><span style="color: rgba(0, 0, 0, 1)">];
+        shs.AsyncResult </span>=<span style="color: rgba(0, 0, 0, 1)"> result;
+        shs.Stream </span>=<span style="color: rgba(0, 0, 0, 1)"> stream;
+        shs.AsyncCallBack </span>=<span style="color: rgba(0, 0, 0, 1)"> callback;
+        shs.Completed </span>= <span style="color: rgba(0, 0, 255, 1)">true</span><span style="color: rgba(0, 0, 0, 1)">;
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">开始异步接收长度为2的头信息
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">该头信息包含要接收的主要数据长度</span>
+        stream.BeginRead(shs.Data, <span style="color: rgba(128, 0, 128, 1)">0</span>, <span style="color: rgba(128, 0, 128, 1)">2</span><span style="color: rgba(0, 0, 0, 1)">, EndRead, shs);
+        </span><span style="color: rgba(0, 0, 255, 1)">return</span><span style="color: rgba(0, 0, 0, 1)"> result;
+    }
+
+    </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">stream异步结束读取</span>
+    <span style="color: rgba(0, 0, 255, 1)">private</span> <span style="color: rgba(0, 0, 255, 1)">void</span><span style="color: rgba(0, 0, 0, 1)"> EndRead(IAsyncResult ar)
+    {
+        SocketHandlerState state </span>=<span style="color: rgba(0, 0, 0, 1)"> (SocketHandlerState)ar.AsyncState;
+        </span><span style="color: rgba(0, 0, 255, 1)">int</span><span style="color: rgba(0, 0, 0, 1)"> dataLength;
+        </span><span style="color: rgba(0, 0, 255, 1)">try</span><span style="color: rgba(0, 0, 0, 1)">
+        {
+            dataLength </span>=<span style="color: rgba(0, 0, 0, 1)"> state.Stream.EndRead(ar);
+        }
+        </span><span style="color: rgba(0, 0, 255, 1)">catch</span><span style="color: rgba(0, 0, 0, 1)">
+        {
+            dataLength </span>= <span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">;
+        }
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">dataLength为0则表示Socket断开连接</span>
+        <span style="color: rgba(0, 0, 255, 1)">if</span> (dataLength == <span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">)
+        {
+            </span><span style="color: rgba(0, 0, 255, 1)">lock</span><span style="color: rgba(0, 0, 0, 1)"> (StateSet)
+                StateSet.Add(state.AsyncResult, state);
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">设定接收到的数据位空byte数组</span>
+            state.Data = <span style="color: rgba(0, 0, 255, 1)">new</span> <span style="color: rgba(0, 0, 255, 1)">byte</span>[<span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">];
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">允许等待线程继续</span>
+<span style="color: rgba(0, 0, 0, 1)">            ((AutoResetEvent)state.AsyncResult.AsyncWaitHandle).Set();
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">执行异步回调函数</span>
+<span style="color: rgba(0, 0, 0, 1)">            state.AsyncCallBack(state.AsyncResult);
+            </span><span style="color: rgba(0, 0, 255, 1)">return</span><span style="color: rgba(0, 0, 0, 1)">;
+        }
+
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">如果是已完成状态，则表示state.Data的数据是头信息</span>
+        <span style="color: rgba(0, 0, 255, 1)">if</span><span style="color: rgba(0, 0, 0, 1)"> (state.Completed)
+        {
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">设定状态为未完成</span>
+            state.Completed = <span style="color: rgba(0, 0, 255, 1)">false</span><span style="color: rgba(0, 0, 0, 1)">;
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">已接收得数据长度为0</span>
+            state.DataLength = <span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">;
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">获取主要数据长度</span>
+            <span style="color: rgba(0, 0, 255, 1)">var</span> length = BitConverter.ToUInt16(state.Data, <span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">);
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">初始化数据的byte数组</span>
+            state.Data = <span style="color: rgba(0, 0, 255, 1)">new</span> <span style="color: rgba(0, 0, 255, 1)">byte</span><span style="color: rgba(0, 0, 0, 1)">[length];
+            </span><span style="color: rgba(0, 0, 255, 1)">try</span><span style="color: rgba(0, 0, 0, 1)">
+            {
+                </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">开始异步接收主要数据</span>
+                state.Stream.BeginRead(state.Data, <span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">, length, EndRead, state);
+            }
+            </span><span style="color: rgba(0, 0, 255, 1)">catch</span><span style="color: rgba(0, 0, 0, 1)">
+            {
+                </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">出现Socket异常</span>
+                <span style="color: rgba(0, 0, 255, 1)">lock</span><span style="color: rgba(0, 0, 0, 1)"> (StateSet)
+                    StateSet.Add(state.AsyncResult, state);
+                state.Data </span>= <span style="color: rgba(0, 0, 255, 1)">new</span> <span style="color: rgba(0, 0, 255, 1)">byte</span>[<span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">];
+                ((AutoResetEvent)state.AsyncResult.AsyncWaitHandle).Set();
+                state.AsyncCallBack(state.AsyncResult);
+            }
+            </span><span style="color: rgba(0, 0, 255, 1)">return</span><span style="color: rgba(0, 0, 0, 1)">;
+        }
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">接收到主要数据</span>
+        <span style="color: rgba(0, 0, 255, 1)">else</span><span style="color: rgba(0, 0, 0, 1)">
+        {
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">判断是否接收了完整的数据</span>
+            <span style="color: rgba(0, 0, 255, 1)">if</span> (dataLength + state.DataLength !=<span style="color: rgba(0, 0, 0, 1)"> state.Data.Length)
+            {
+                </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">增加已接收数据长度</span>
+                state.DataLength +=<span style="color: rgba(0, 0, 0, 1)"> dataLength;
+                </span><span style="color: rgba(0, 0, 255, 1)">try</span><span style="color: rgba(0, 0, 0, 1)">
+                {
+                    </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">继续接收数据</span>
+                    state.Stream.BeginRead(state.Data, state.DataLength, state.Data.Length -<span style="color: rgba(0, 0, 0, 1)"> state.DataLength, EndRead, state);
+                }
+                </span><span style="color: rgba(0, 0, 255, 1)">catch</span><span style="color: rgba(0, 0, 0, 1)">
+                {
+                    </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">出现Socket异常</span>
+                    <span style="color: rgba(0, 0, 255, 1)">lock</span><span style="color: rgba(0, 0, 0, 1)"> (StateSet)
+                        StateSet.Add(state.AsyncResult, state);
+                    state.Data </span>= <span style="color: rgba(0, 0, 255, 1)">new</span> <span style="color: rgba(0, 0, 255, 1)">byte</span>[<span style="color: rgba(128, 0, 128, 1)">0</span><span style="color: rgba(0, 0, 0, 1)">];
+                    ((AutoResetEvent)state.AsyncResult.AsyncWaitHandle).Set();
+                    state.AsyncCallBack(state.AsyncResult);
+                    </span><span style="color: rgba(0, 0, 255, 1)">return</span><span style="color: rgba(0, 0, 0, 1)">;
+                }
+                </span><span style="color: rgba(0, 0, 255, 1)">return</span><span style="color: rgba(0, 0, 0, 1)">;
+            }
+            </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">接收完成</span>
+            state.Completed = <span style="color: rgba(0, 0, 255, 1)">true</span><span style="color: rgba(0, 0, 0, 1)">;
+            </span><span style="color: rgba(0, 0, 255, 1)">lock</span><span style="color: rgba(0, 0, 0, 1)"> (StateSet)
+                StateSet.Add(state.AsyncResult, state);
+            ((AutoResetEvent)state.AsyncResult.AsyncWaitHandle).Set();
+            state.AsyncCallBack(state.AsyncResult);
+        }
+    }
+
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span><span style="color: rgba(0, 128, 0, 1)"> 结束接收
+    </span><span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;/summary&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;param name="asyncResult"&gt;</span><span style="color: rgba(0, 128, 0, 1)">异步结果</span><span style="color: rgba(128, 128, 128, 1)">&lt;/param&gt;</span>
+    <span style="color: rgba(128, 128, 128, 1)">///</span> <span style="color: rgba(128, 128, 128, 1)">&lt;returns&gt;</span><span style="color: rgba(0, 128, 0, 1)">接收到的数据</span><span style="color: rgba(128, 128, 128, 1)">&lt;/returns&gt;</span>
+    <span style="color: rgba(0, 0, 255, 1)">public</span> <span style="color: rgba(0, 0, 255, 1)">byte</span><span style="color: rgba(0, 0, 0, 1)">[] EndReceive(IAsyncResult asyncResult)
+    {
+        </span><span style="color: rgba(0, 128, 0, 1)">//</span><span style="color: rgba(0, 128, 0, 1)">判断异步操作状态是否属于当前处理程序</span>
+        <span style="color: rgba(0, 0, 255, 1)">if</span> (!<span style="color: rgba(0, 0, 0, 1)">StateSet.ContainsKey(asyncResult))
+            </span><span style="color: rgba(0, 0, 255, 1)">throw</span> <span style="color: rgba(0, 0, 255, 1)">new</span> ArgumentException(<span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(128, 0, 0, 1)">无法识别的asyncResult。</span><span style="color: rgba(128, 0, 0, 1)">"</span><span style="color: rgba(0, 0, 0, 1)">);
+        SocketHandlerState state </span>=<span style="color: rgba(0, 0, 0, 1)"> StateSet[asyncResult];
+        </span><span style="color: rgba(0, 0, 255, 1)">lock</span><span style="color: rgba(0, 0, 0, 1)"> (StateSet)
+            StateSet.Remove(asyncResult);
+        </span><span style="color: rgba(0, 0, 255, 1)">return</span><span style="color: rgba(0, 0, 0, 1)"> state.Data;
+    }</span></pre>
+</div>
+<p>至此，SocketHandler的功能已经实现。</p>
+<p><a href="http://www.cnblogs.com/Kation/archive/2013/03/07/2947278.html" rel="noopener">下一篇</a>将为大家讲解服务器端的实现。</p>
+<p>&nbsp;</p>
+<p>原文地址：<a id="Editor_Edit_hlEntryLink" title="view: [C#]手把手教你打造Socket的TCP通讯连接（二）" href="http://www.cnblogs.com/Kation/archive/2013/03/06/2947145.html" target="_blank" rel="noopener">http://www.cnblogs.com/Kation/archive/2013/03/06/2947145.html</a></p>
+</div>
+<div class="clear"></div>
+<div id="blog_post_info_block" role="contentinfo">
+    <div id="blog_post_info"></div>
+    <div class="clear"></div>
+    <div id="post_next_prev"></div>
+</div>
+            </div>
+            <div class="postDesc">posted @ 
+<span id="post-date" data-last-update-days="2454.6525423794724" data-date-created="BlogServer.Application.Dto.BlogPost.BlogPostDto" data-date-updated="2017-09-15 08:22">2013-03-06 22:49</span>&nbsp;
+<a href="https://www.cnblogs.com/Kation">Kation</a>&nbsp;
+阅读(<span id="post_view_count">9982</span>)&nbsp;
+评论(<span id="post_comment_count">10</span>)&nbsp;
+<a href="https://i.cnblogs.com/EditPosts.aspx?postid=2947145" rel="nofollow">编辑</a>&nbsp;
+<a href="javascript:void(0)" onclick="AddToWz(2947145);return false;">收藏</a>&nbsp;
+<a href="javascript:void(0)" onclick="reportManager.report({ currentUserId: '', targetType: 'blogPost', targetId: '2947145', targetLink: 'https://www.cnblogs.com/Kation/archive/2013/03/06/2947145.html', title: '[C#]手把手教你打造Socket的TCP通讯连接（二）' })">举报</a>
+</div>
+        </div>
+	    
+	    
+    </div><!--end: topics 文章、评论容器-->
+</div>
+<script>
+    var cb_entryId = 2947145, cb_entryCreatedDate = '2013-03-06 22:49', cb_postType = 1, cb_postTitle = '[C#]手把手教你打造Socket的TCP通讯连接（二）';
+    var allowComments = true, cb_blogId = 143417, cb_blogApp = 'Kation', cb_blogUserGuid = '685cd648-f805-e011-ac81-842b2b196315';
+    mermaidRender.render()
+    markdown_highlight()
+    zoomManager.apply("#cnblogs_post_body img:not(.code_img_closed):not(.code_img_opened)");    
+</script>
+<a id="!comments"></a>
+<div id="blog-comments-placeholder"></div>
+<div id="comment_form" class="commentform">
+    <a name="commentform"></a>
+    <div id="divCommentShow"></div>
+    <div id="comment_nav">
+            <a class="comment-nav-left forpc" href="https://cnblogs.vip/" target="_blank">会员力量，点亮园子希望</a>
+        <div class="comment-nav-right">
+            <span id="span_refresh_tips"></span><a href="#" onclick="return RefreshPage();">刷新页面</a><a href="#top">返回顶部</a>
+        </div>
+    </div>
+    <div id="comment_form_container"></div>
+    <div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+        <div id="cnblogs_ch"></div>
+    <div id="opt_under_post"></div>
+        <div id="cnblogs_c1" class="under-post-card">
+            <a href="https://www.finclip.com?channel=cnblog2024" rel="nofollow" target="_blank" onclick="countCreativeClicks('C1-凡泰极客')">
+                <img src="https://img2024.cnblogs.com/blog/35695/202405/35695-20240517155930267-114888508.jpg" onload="countCreativeImpressions('C1-凡泰极客')" alt="" />
+                <span id="c1_impression" style="display:none"></span>
+            </a>
+        </div>
+    <div id="under_post_card1"></div>
+    <div id="under_post_card2"></div>
+    <div id="HistoryToday" class="under-post-card"></div>
+    <script type="text/javascript">
+        var commentManager = new blogCommentManager();
+        commentManager.renderComments(0);
+        fixPostBody();
+        window.footnoteTipManager.generateFootnoteTips();
+
+            window.tocManager.displayDisableTocTips = false;
+            window.tocManager.generateToc();
+            
+                setTimeout(function() { countViews(cb_blogId, cb_entryId); }, 50);
+            
+            deliverT2();
+            deliverC1C2();
+            loadNewsAndKb();
+            
+                LoadPostCategoriesTags(cb_blogId, cb_entryId);
+            
+            LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+            GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+            loadOptUnderPost();
+            GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+                </script>
+</div>
+
+	</div><!--end: forFlow -->
+	</div><!--end: mainContent 主体内容容器-->
+	<div id="sideBar">
+		<div id="sideBarMain">
+			
+<div id="sidebar_c3"></div>
+			<div id="blog-calendar" style="display:none"></div><script>loadBlogDefaultCalendar();</script>			
+			<div id="leftcontentcontainer">
+				<div id="blog-sidecolumn"></div>
+                    <script>loadBlogSideColumn();</script>
+			</div>			
+		</div><!--end: sideBarMain -->
+	</div><!--end: sideBar 侧边栏容器 -->
+	<div class="clear"></div>
+	</div><!--end: main -->
+	<div class="clear"></div>
+	<div id="footer">
+		<!--done-->
+Copyright &copy; 2024 Kation
+<br /><span id="poweredby">Powered by .NET 8.0 on Kubernetes</span>
+
+
+
+	</div><!--end: footer -->
+</div><!--end: home 自定义的最大容器 -->
+
+
+
+    
+
+    <input type="hidden" id="antiforgery_token" value="CfDJ8ONv0caE5GtEh3YJ5j088klsUHiS4RAfyBzIV17Fq2Mc0zbP0GBAi8tqrGmYJ82RyWsew12U5YJWPN7KbQrAcK1SC8jIY08iOjuy_rVi1a8qbp6nJMI02n_54Ed-92xtJBqvwz7LK6uczkr5Yb2th5s" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M95P3TTWJZ"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-M95P3TTWJZ');
+</script>
+<script defer src="https://hm.baidu.com/hm.js?866c9be12d4a814454792b1fd0fed295"></script>
+</body>
+</html>
