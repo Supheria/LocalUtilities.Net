@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1831
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "多个异步TCP服务器实现之Socket类", "多个异步TCP服务器实现之Socket类\多个异步TCP服务器实现之Socket类.csproj", "{890CB24C-7E49-4CED-9E11-7E13540F96CF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{890CB24C-7E49-4CED-9E11-7E13540F96CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{890CB24C-7E49-4CED-9E11-7E13540F96CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{890CB24C-7E49-4CED-9E11-7E13540F96CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{890CB24C-7E49-4CED-9E11-7E13540F96CF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {620C15BC-0ED3-4058-A378-B367DCFAE004}
+	EndGlobalSection
+EndGlobal
