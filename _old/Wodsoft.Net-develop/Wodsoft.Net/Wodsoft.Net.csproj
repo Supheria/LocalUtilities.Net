@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{FBEB3253-FDB7-4541-AC5C-019BC8FA7BE1}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Wodsoft.Net</RootNamespace>
+    <AssemblyName>Wodsoft.Net</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Http\HttpInputStream.cs" />
+    <Compile Include="Http\HttpRequestSource.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Http\HttpResponseSource.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Http\HttpSocketHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Protocol\Converters\SbyteConverter.cs" />
+    <Compile Include="Protocol\Converters\ByteConverter.cs" />
+    <Compile Include="Protocol\IValueConverter.cs" />
+    <Compile Include="Protocol\ProtocolAttribute.cs" />
+    <Compile Include="Protocol\ProtocolChannel.cs" />
+    <Compile Include="Protocol\ProtocolContext.cs" />
+    <Compile Include="Protocol\ProtocolConverter.cs" />
+    <Compile Include="Protocol\ProtocolManager.cs" />
+    <Compile Include="Protocol\ProtocolMapping.cs" />
+    <Compile Include="Protocol\ProtocolMappingResult.cs" />
+    <Compile Include="Protocol\ProtocolPackage.cs" />
+    <Compile Include="Protocol\ProtocolSession.cs" />
+    <Compile Include="Proxy\HttpProxy.cs" />
+    <Compile Include="Sockets\ISocket.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\ISocketDgramContext.cs" />
+    <Compile Include="Sockets\ISocketDgramHandler.cs" />
+    <Compile Include="Sockets\ISocketStreamHandler.cs" />
+    <Compile Include="Sockets\ISocketStreamProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketBufferedStream.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketByteHandler.cs" />
+    <Compile Include="Sockets\SocketDataBag.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketDgramBase.cs" />
+    <Compile Include="Sockets\SocketEncryptedStream.cs" />
+    <Compile Include="Sockets\SocketEncryptedStreamProvider.cs" />
+    <Compile Include="Sockets\SocketEventArgs.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketHandler16.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketHandler32.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketHeadContentHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketNetworkStreamProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketProcessContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketReceiveContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketSendContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketSourceHandler.cs" />
+    <Compile Include="Sockets\SocketStreamBase.cs" />
+    <Compile Include="Sockets\SocketStreamHandlerContext.cs" />
+    <Compile Include="Sockets\SocketTcpBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketTcpClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketTcpListener.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketUdpClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Sockets\SocketUdpContext.cs" />
+    <Compile Include="Sockets\SocketUdpHost.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
