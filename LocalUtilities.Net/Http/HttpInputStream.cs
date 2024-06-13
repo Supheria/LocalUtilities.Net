@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using LocalUtilities.Net.Sockets;
+﻿using LocalUtilities.Net.Sockets;
 
 namespace LocalUtilities.Net.Http
 {
@@ -113,7 +106,7 @@ namespace LocalUtilities.Net.Http
                             offset = base.Length;
                         else
                             if (offset > _Length)
-                                offset = _Length;
+                            offset = _Length;
                     break;
                 case SeekOrigin.End:
                     if (_Length == -1)
@@ -144,7 +137,7 @@ namespace LocalUtilities.Net.Http
                         value = base.Length;
                     else
                         if (value > _Length)
-                            value = _Length;
+                        value = _Length;
                 if (value > base.Length)
                 {
                     byte[] data = new byte[value - base.Length];

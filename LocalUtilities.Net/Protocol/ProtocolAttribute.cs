@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LocalUtilities.Net.Protocol
+﻿namespace LocalUtilities.Net.Protocol
 {
     [AttributeUsage(AttributeTargets.Method)]
     public class ProtocolAttribute : Attribute

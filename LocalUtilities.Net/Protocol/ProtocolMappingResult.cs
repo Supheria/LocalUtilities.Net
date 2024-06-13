@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 
 namespace LocalUtilities.Net.Protocol
 {
@@ -34,7 +28,7 @@ namespace LocalUtilities.Net.Protocol
             InvokeMethod = invokeMethod;
             IsSealed = true;
         }
-        
+
         public void Get(Action<ProtocolSession> invokeMethod)
         {
             if (invokeMethod == null)

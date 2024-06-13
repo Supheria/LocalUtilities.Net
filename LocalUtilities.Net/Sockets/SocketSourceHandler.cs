@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LocalUtilities.Net.Sockets
+﻿namespace LocalUtilities.Net.Sockets
 {
-    public class SocketSourceHandler : ISocketDgramHandler<byte[], byte[]>
+    public class SocketSourceHandler : ISocketDgramHandler
     {
         public byte[] ConvertReceiveData(byte[] data, int length)
         {

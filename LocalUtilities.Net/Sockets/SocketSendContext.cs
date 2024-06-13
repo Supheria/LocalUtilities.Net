@@ -1,23 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace LocalUtilities.Net.Sockets;
 
-namespace LocalUtilities.Net.Sockets
+public class SocketSendContext(Stream source) : SocketProcessContext(source)
 {
-    public class SocketSendContext<T> : SocketProcessContext
+    public byte[] Data { get; set; } = [];
+
+    public override void Reset()
     {
-        public SocketSendContext(Stream source)
-            : base(source) { }
-
-        public T Data { get; set; }
-
-        public override void Reset()
-        {
-            Data = default(T);
-            base.Reset();
-        }
+        Data = [];
+        base.Reset();
     }
 }

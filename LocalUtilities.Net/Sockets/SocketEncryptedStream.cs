@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Security;
-using System.Net.Sockets;
+﻿using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace LocalUtilities.Net.Sockets
 {
@@ -170,7 +162,7 @@ namespace LocalUtilities.Net.Sockets
                 return t.Result;
             });
         }
-        
+
         public override int ReadByte()
         {
             int data = InnerStream.ReadByte();
@@ -195,7 +187,7 @@ namespace LocalUtilities.Net.Sockets
             buffer = EncryptData(buffer, offset, count);
             return InnerStream.WriteAsync(buffer, 0, count, cancellationToken);
         }
-        
+
         public override void WriteByte(byte value)
         {
             value ^= Keys[KeyWriteOffset];
@@ -328,7 +320,7 @@ namespace LocalUtilities.Net.Sockets
             //        throw new AuthenticationException("验证加密成功信息失败。");
             _IsMutuallyAuthenticated = true;
         }
-        
+
         public void AuthenticateAsServer()
         {
             if (IsAuthenticated)
@@ -417,7 +409,7 @@ namespace LocalUtilities.Net.Sockets
             ////通过加密流发送成功信息
             //await WriteAsync(_SuccessData, 0, _SuccessData.Length);
         }
-        
+
         private void GenerateKey()
         {
             Random rnd = new Random();

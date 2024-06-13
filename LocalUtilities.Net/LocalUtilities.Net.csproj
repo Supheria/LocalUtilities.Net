@@ -8,15 +8,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Update="Http\HttpRequestSource.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Http\HttpResponseSource.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Http\HttpSocketHandler.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Remove="Http\**" />
+    <Compile Remove="Protocol\**" />
+    <Compile Remove="Proxy\**" />
+    <EmbeddedResource Remove="Http\**" />
+    <EmbeddedResource Remove="Protocol\**" />
+    <EmbeddedResource Remove="Proxy\**" />
+    <None Remove="Http\**" />
+    <None Remove="Protocol\**" />
+    <None Remove="Proxy\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Sockets\ISocketDgramContext.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Sockets\ISocket.cs">
       <SubType>Code</SubType>
     </Compile>

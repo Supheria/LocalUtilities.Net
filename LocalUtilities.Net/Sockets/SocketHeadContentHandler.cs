@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace LocalUtilities.Net.Sockets
+﻿namespace LocalUtilities.Net.Sockets
 {
-    public abstract class SocketHeadContentHandler<TIn, TOut> : ISocketStreamHandler<TIn, TOut>
+    public abstract class SocketHeadContentHandler : ISocketStreamHandler
     {
         protected int HeadBufferLength { get; private set; }
 
@@ -20,24 +12,23 @@ namespace LocalUtilities.Net.Sockets
             ContentBufferLength = contentBufferLength;
         }
 
-        private bool CheckHeadCompleted(SocketReceiveContext<TOut> context)
+        private bool CheckHeadCompleted(SocketReceiveContext context)
         {
             if (context.Buffer.Length == 0)
                 return false;
             return ProcessReceiveHead(context);
         }
 
-        private bool CheckContentCompleted(SocketReceiveContext<TOut> context)
+        private bool CheckContentCompleted(SocketReceiveContext context)
         {
             if (context.Buffer.Length == 0)
                 return false;
             return ProcessReceiveContent(context);
         }
-        
-        public TOut Receive(SocketStreamHandlerContext<TIn, TOut> context)
+
+        public byte[] Receive(SocketStreamHandlerContext context)
         {
-            if (context == null)
-                throw new ArgumentNullException("context");
+            ArgumentNullException.ThrowIfNull(context);
             context.ReceiveContext.CheckQueue();
 
             bool headProcessCompleted = CheckHeadCompleted(context.ReceiveContext);
@@ -52,7 +43,7 @@ namespace LocalUtilities.Net.Sockets
                         int length = context.Stream.Read(buffer, 0, HeadBufferLength);
                         if (length == 0)
                         {
-                            return default(TOut);
+                            return [];
                         }
                         position = context.ReceiveContext.Buffer.Position;
                         context.ReceiveContext.Buffer.Position = context.ReceiveContext.Buffer.Length;
@@ -62,13 +53,13 @@ namespace LocalUtilities.Net.Sockets
                     catch
                     {
                         context.ReceiveContext.Reset();
-                        return default(TOut);
+                        return [];
                     }
                     headProcessCompleted = ProcessReceiveHead(context.ReceiveContext);
                     if (context.ReceiveContext.IsFailed)
                     {
                         context.ReceiveContext.Reset();
-                        return default(TOut);
+                        return [];
                     }
                 }
             }
@@ -84,7 +75,7 @@ namespace LocalUtilities.Net.Sockets
                         int length = context.Stream.Read(buffer, 0, ContentBufferLength);
                         if (length == 0)
                         {
-                            return default(TOut);
+                            return [];
                         }
                         position = context.ReceiveContext.Buffer.Position;
                         context.ReceiveContext.Buffer.Position = context.ReceiveContext.Buffer.Length;
@@ -94,25 +85,25 @@ namespace LocalUtilities.Net.Sockets
                     catch
                     {
                         context.ReceiveContext.Reset();
-                        return default(TOut);
+                        return [];
                     }
                     contentProcessCompleted = ProcessReceiveContent(context.ReceiveContext);
                     if (context.ReceiveContext.IsFailed)
                     {
                         context.ReceiveContext.Reset();
-                        return default(TOut);
+                        return [];
                     }
                 }
             }
-            TOut value = context.ReceiveContext.Result;
+            var value = context.ReceiveContext.Result;
             context.ReceiveContext.Reset();
             return value;
         }
 
-        public async Task<TOut> ReceiveAsync(SocketStreamHandlerContext<TIn, TOut> context)
+        public async Task<byte[]> ReceiveAsync(SocketStreamHandlerContext context)
         {
-            if (context == null)
-                throw new ArgumentNullException("context");
+            ArgumentNullException.ThrowIfNull(context);
+
             context.ReceiveContext.CheckQueue();
 
             bool headProcessCompleted = CheckHeadCompleted(context.ReceiveContext);
@@ -121,7 +112,7 @@ namespace LocalUtilities.Net.Sockets
                 if (context.ReceiveContext.IsFailed)
                 {
                     context.ReceiveContext.Reset();
-                    return default(TOut);
+                    return [];
                 }
                 byte[] buffer = new byte[HeadBufferLength];
                 long position;
@@ -132,7 +123,7 @@ namespace LocalUtilities.Net.Sockets
                         int length = await context.Stream.ReadAsync(buffer, 0, HeadBufferLength);
                         if (length == 0)
                         {
-                            return default(TOut);
+                            return [];
                         }
                         position = context.ReceiveContext.Buffer.Position;
                         context.ReceiveContext.Buffer.Position = context.ReceiveContext.Buffer.Length;
@@ -142,13 +133,13 @@ namespace LocalUtilities.Net.Sockets
                     catch
                     {
                         context.ReceiveContext.Reset();
-                        return default(TOut);
+                        return [];
                     }
                     headProcessCompleted = ProcessReceiveHead(context.ReceiveContext);
                     if (context.ReceiveContext.IsFailed)
                     {
                         context.ReceiveContext.Reset();
-                        return default(TOut);
+                        return [];
                     }
                 }
             }
@@ -158,7 +149,7 @@ namespace LocalUtilities.Net.Sockets
                 if (context.ReceiveContext.IsFailed)
                 {
                     context.ReceiveContext.Reset();
-                    return default(TOut);
+                    return [];
                 }
                 byte[] buffer = new byte[ContentBufferLength];
                 long position;
@@ -169,7 +160,7 @@ namespace LocalUtilities.Net.Sockets
                         int length = await context.Stream.ReadAsync(buffer, 0, ContentBufferLength);
                         if (length == 0)
                         {
-                            return default(TOut);
+                            return [];
                         }
                         position = context.ReceiveContext.Buffer.Position;
                         context.ReceiveContext.Buffer.Position = context.ReceiveContext.Buffer.Length;
@@ -179,26 +170,26 @@ namespace LocalUtilities.Net.Sockets
                     catch
                     {
                         context.ReceiveContext.Reset();
-                        return default(TOut);
+                        return [];
                     }
                     contentProcessCompleted = ProcessReceiveContent(context.ReceiveContext);
                     if (context.ReceiveContext.IsFailed)
                     {
                         context.ReceiveContext.Reset();
-                        return default(TOut);
+                        return [];
                     }
                 }
             }
-            TOut value = context.ReceiveContext.Result;
+            var value = context.ReceiveContext.Result;
             context.ReceiveContext.Reset();
             return value;
         }
 
-        protected abstract bool ProcessReceiveHead(SocketReceiveContext<TOut> context);
+        protected abstract bool ProcessReceiveHead(SocketReceiveContext context);
 
-        protected abstract bool ProcessReceiveContent(SocketReceiveContext<TOut> context);
-        
-        public bool Send(TIn data, SocketStreamHandlerContext<TIn, TOut> context)
+        protected abstract bool ProcessReceiveContent(SocketReceiveContext context);
+
+        public bool Send(byte[] data, SocketStreamHandlerContext context)
         {
             context.SendContext.CheckQueue();
             context.SendContext.Data = data;
@@ -221,7 +212,7 @@ namespace LocalUtilities.Net.Sockets
             return true;
         }
 
-        public async Task<bool> SendAsync(TIn data, SocketStreamHandlerContext<TIn, TOut> context)
+        public async Task<bool> SendAsync(byte[] data, SocketStreamHandlerContext context)
         {
             context.SendContext.CheckQueue();
             context.SendContext.Data = data;
@@ -244,8 +235,8 @@ namespace LocalUtilities.Net.Sockets
             return true;
         }
 
-        protected abstract byte[] ProcessSendHead(SocketSendContext<TIn> context);
+        protected abstract byte[] ProcessSendHead(SocketSendContext context);
 
-        protected abstract byte[] ProcessSendContent(SocketSendContext<TIn> context);
+        protected abstract byte[] ProcessSendContent(SocketSendContext context);
     }
 }

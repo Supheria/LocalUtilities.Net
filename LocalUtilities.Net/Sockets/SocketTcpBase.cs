@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace LocalUtilities.Net.Sockets
 {
@@ -16,14 +8,14 @@ namespace LocalUtilities.Net.Sockets
     /// </summary>
     /// <typeparam name="TIn">输入类型。</typeparam>
     /// <typeparam name="TOut">输出类型。</typeparam>
-    public abstract class SocketTcpBase<TIn, TOut> : SocketStreamBase<TIn, TOut>, IDisposable
+    public abstract class SocketTcpBase : SocketStreamBase, IDisposable
     {
         /// <summary>
         /// 实例化TCP客户端。
         /// </summary>
         /// <param name="socket">Socket套接字。</param>
         /// <param name="socketHandler">Socket处理器。</param>
-        protected SocketTcpBase(Socket socket, ISocketStreamHandler<TIn, TOut> socketHandler)
+        protected SocketTcpBase(Socket socket, ISocketStreamHandler socketHandler)
             : this(socket, socketHandler, new SocketNetworkStreamProvider()) { }
 
         /// <summary>
@@ -32,15 +24,12 @@ namespace LocalUtilities.Net.Sockets
         /// <param name="socket">Socket套接字。</param>
         /// <param name="socketHandler">Socket处理器。</param>
         /// <param name="streamProvider">Socket网络流提供者。</param>
-        protected SocketTcpBase(Socket socket, ISocketStreamHandler<TIn, TOut> socketHandler, ISocketStreamProvider streamProvider)
+        protected SocketTcpBase(Socket socket, ISocketStreamHandler socketHandler, ISocketStreamProvider streamProvider)
             : base(socket, socketHandler, streamProvider)
         {
-            if (socket == null)
-                throw new ArgumentNullException("socket");
-            if (socketHandler == null)
-                throw new ArgumentNullException("socketHandler");
-            if (streamProvider == null)
-                throw new ArgumentNullException("streamProvider");
+            ArgumentNullException.ThrowIfNull(socket);
+            ArgumentNullException.ThrowIfNull(socketHandler);
+            ArgumentNullException.ThrowIfNull(streamProvider);
             socket.NoDelay = true;
         }
 
@@ -86,7 +75,7 @@ namespace LocalUtilities.Net.Sockets
         }
 
         #endregion
-        
+
         #region 其它
 
         /// <summary>

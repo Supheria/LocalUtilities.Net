@@ -1,32 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace LocalUtilities.Net.Sockets;
 
-namespace LocalUtilities.Net.Sockets
+public class SocketReceiveContext(Stream source) : SocketProcessContext(source)
 {
-    public class SocketReceiveContext<T> : SocketProcessContext
+    public SocketBufferedStream Buffer { get; private set; } = new();
+
+    public byte[] ByteBuffer { get; set; } = [];
+
+    public byte[] Result { get; set; } = [];
+
+    public override void Reset()
     {
-        public SocketReceiveContext(Stream source)
-            : base(source)
-        {
-            Buffer = new SocketBufferedStream();
-        }
-
-        public SocketBufferedStream Buffer { get; private set; }
-
-        public byte[] ByteBuffer { get; set; }
-
-        public T Result { get; set; }
-
-        public override void Reset()
-        {
-            Result = default(T);
-            Buffer.ResetPosition();
-            ByteBuffer = null;
-            base.Reset();
-        }
+        Result = [];
+        Buffer.ResetPosition();
+        ByteBuffer = [];
+        base.Reset();
     }
 }

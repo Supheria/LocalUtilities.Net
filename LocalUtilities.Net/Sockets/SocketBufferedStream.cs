@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace LocalUtilities.Net.Sockets
 {
     /// <summary>
@@ -32,10 +25,9 @@ namespace LocalUtilities.Net.Sockets
         public SocketBufferedStream(int bufferSize)
         {
             if (bufferSize < 1)
-                throw new ArgumentOutOfRangeException("bufferSize", "Buffer size can not less than 1.");
+                throw new ArgumentOutOfRangeException(nameof(bufferSize), "Buffer size can not less than 1.");
             _BufferSize = bufferSize;
-            _Buffer = new List<byte[]>();
-            _Buffer.Add(new byte[bufferSize]);
+            _Buffer = [new byte[bufferSize]];
         }
 
         /// <summary>
@@ -372,7 +364,7 @@ namespace LocalUtilities.Net.Sockets
             _Position = 0;
             _DirtyLength = 0;
         }
-        
+
         /// <summary>
         /// 重置缓存位置。
         /// 该方法会将缓存的当前位置之前的数据删除，当前位置变为0。

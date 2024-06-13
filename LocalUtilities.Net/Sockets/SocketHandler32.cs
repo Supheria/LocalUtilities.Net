@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace LocalUtilities.Net.Sockets
+﻿namespace LocalUtilities.Net.Sockets
 {
-    public class SocketHandler32 : SocketHeadContentHandler<byte[], byte[]>
+    public class SocketHandler32 : SocketHeadContentHandler
     {
         public SocketHandler32() : base(4, 4096) { }
-        
-        protected override bool ProcessReceiveHead(SocketReceiveContext<byte[]> context)
+
+        protected override bool ProcessReceiveHead(SocketReceiveContext context)
         {
             if (context.Buffer.Length < 4)
                 return false;
@@ -22,7 +14,7 @@ namespace LocalUtilities.Net.Sockets
             return true;
         }
 
-        protected override bool ProcessReceiveContent(SocketReceiveContext<byte[]> context)
+        protected override bool ProcessReceiveContent(SocketReceiveContext context)
         {
             int length = context.DataBag.DataLength;
             if (context.Buffer.Length < length)
@@ -33,12 +25,12 @@ namespace LocalUtilities.Net.Sockets
             return true;
         }
 
-        protected override byte[] ProcessSendHead(SocketSendContext<byte[]> context)
+        protected override byte[] ProcessSendHead(SocketSendContext context)
         {
             return BitConverter.GetBytes(context.Data.Length);
         }
 
-        protected override byte[] ProcessSendContent(SocketSendContext<byte[]> context)
+        protected override byte[] ProcessSendContent(SocketSendContext context)
         {
             return context.Data;
         }

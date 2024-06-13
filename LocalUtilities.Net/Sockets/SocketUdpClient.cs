@@ -1,22 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 
 namespace LocalUtilities.Net.Sockets
 {
-    public class SocketUdpClient<TIn, TOut> : SocketDgramBase<TIn, TOut>
+    public class SocketUdpClient : SocketDgramBase
     {
-        public SocketUdpClient(SocketUdpContext context, ISocketDgramHandler<TIn, TOut> socketHandler)
+        public SocketUdpClient(SocketUdpContext context, ISocketDgramHandler socketHandler)
             : base(context, socketHandler)
         {
             Context = context;
             _IsConnected = true;
         }
-
-        public SocketUdpContext Context { get; private set; }
 
         private bool _IsConnected;
         public override bool IsConnected
@@ -43,7 +36,7 @@ namespace LocalUtilities.Net.Sockets
                 _IsConnected = false;
             });
         }
-        
+
         public override IPEndPoint RemoteEndPoint
         {
             get { return Context.RemoteEndPoint; }

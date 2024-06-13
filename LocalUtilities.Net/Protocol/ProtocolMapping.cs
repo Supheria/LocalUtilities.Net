@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LocalUtilities.Net.Protocol
+﻿namespace LocalUtilities.Net.Protocol
 {
     public abstract class ProtocolMapping
     {
