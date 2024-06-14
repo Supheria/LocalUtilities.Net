@@ -214,7 +214,7 @@ public sealed class TcpServer
                 //判断包的长度  
                 var package = client.Buffer.GetRange(0, 4).ToArray();
                 int length = BitConverter.ToInt32(package, 0);
-                if (length > client.Buffer.Count - 4)   
+                if (length > client.Buffer.Count - 4)
                     //长度不够时,退出循环,让程序继续接收
                     break;
                 //包够长时,则提取出来,交给后面的程序去处理  

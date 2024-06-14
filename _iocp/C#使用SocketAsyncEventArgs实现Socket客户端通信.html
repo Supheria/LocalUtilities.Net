@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-CN">
+ <head>
+  <meta charset="utf-8">
+  <link rel="canonical" href="https://blog.csdn.net/q1143910315/article/details/106065788">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="report" content="{&quot;pid&quot;: &quot;blog&quot;, &quot;spm&quot;:&quot;1001.2101&quot;}">
+  <meta name="referrer" content="always">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  <link rel="alternate" media="handheld" href="#">
+  <meta name="shenma-site-verification" content="5a59773ab8077d4a62bf469ab966a63b_1497598848">
+  <meta name="applicable-device" content="pc">
+  <link href="http://toolman.ddnsfree.com:8585/csdnimg/g/static/logo/favicon32.ico" rel="shortcut icon" type="image/x-icon">
+  <title>C#使用SocketAsyncEventArgs实现Socket客户端通信_c# socket sendasync-CSDN博客</title>
+  <meta name="keywords" content="c# socket sendasync">
+  <meta name="csdn-baidu-search" content="{&quot;autorun&quot;:true,&quot;install&quot;:true,&quot;keyword&quot;:&quot;c# socket sendasync&quot;}">
+  <meta name="description" content="文章浏览阅读3k次，点赞2次，收藏13次。用System.Net.Sockets.Socket类实现tcp通信并不简单，需要大量代码去实现，但其接近底层而可以发挥更高的效率，本文的目标是实现高性能的套接字客户端，否则没有使用Socket的必要，而应该使用更为简单易用的System.Net.Sockets.TcpClient首先是参考资料，第一当然是微软的文档（https://docs.microsoft.com/zh-cn/dotnet/api/system.net.sockets.socket?view=netcore-3.1），其次是其他人_c# socket sendasync">
+  <link rel="stylesheet" type="text/css" href="http://toolman.ddnsfree.com:8585/csdnimg/release/blogv2/dist/pc/css/detail_enter-4be4c75969.min.css">
+  <link rel="stylesheet" type="text/css" href="http://toolman.ddnsfree.com:8585/csdnimg/release/blogv2/dist/pc/themesSkin/skin3-template/skin3-template-762f7595fd.min.css">
+  <meta name="toolbar" content="{&quot;type&quot;:&quot;0&quot;,&quot;fixModel&quot;:&quot;1&quot;}">
+  <link rel="stylesheet" type="text/css" href="http://toolman.ddnsfree.com:8585/csdnimg/public/sandalstrap/1.4/css/sandalstrap.min.css">
+  <style>
+        .MathJax, .MathJax_Message, .MathJax_Preview{
+            display: none
+        }
+    </style>
+ </head>
+ <body class="nodata " style="">
+  <link rel="stylesheet" href="http://toolman.ddnsfree.com:8585/csdnimg/release/blogv2/dist/pc/css/blog_code-01256533b5.min.css">
+  <link rel="stylesheet" href="http://toolman.ddnsfree.com:8585/csdnimg/release/blogv2/dist/mdeditor/css/editerView/chart-3456820cac.css">
+  <link rel="stylesheet" href="http://toolman.ddnsfree.com:8585/csdnimg/g/lib/swiper/6.0.4/css/swiper.css"><div class="main_father clearfix d-flex justify-content-center mainfather-concision" style="height:100%;"><div class="container clearfix container-concision" id="mainBox">
+    <main>
+     <div class="blog-content-box"><div class="article-header-box"><div class="article-header"><div class="article-title-box">
+         <h1 class="title-article" id="articleContentId">C#使用SocketAsyncEventArgs实现Socket客户端通信</h1></div><div class="article-info-box"><div class="up-time">
+          最新推荐文章于&nbsp;2021-11-02 15:32:27&nbsp;发布</div><div class="article-bar-top"><img class="article-type-img" src="http://toolman.ddnsfree.com:8585/csdnimg/release/blogv2/dist/pc/img/original.png" alt=""><div class="bar-content"><img class="article-vip-img-new" src="http://toolman.ddnsfree.com:8585/csdnimg/release/blogv2/dist/pc/img/identityVipNew.png" alt=""> <a class="follow-nickName " href="https://blog.csdn.net/q1143910315" target="_blank" rel="noopener" title="吞噬代码">吞噬代码</a> <img class="article-time-img article-heard-img" src="http://toolman.ddnsfree.com:8585/csdnimg/release/blogv2/dist/pc/img/newCurrentTime2.png" alt=""> <span class="time blog-postTime" data-time="2020-05-12 03:20:17">最新推荐文章于&nbsp;2021-11-02 15:32:27&nbsp;发布</span>
+           <div class="read-count-box"><img class="article-read-img article-heard-img" src="http://toolman.ddnsfree.com:8585/csdnimg/release/blogv2/dist/pc/img/articleReadEyes2.png" alt=""> <span class="read-count">阅读量3k</span> <a id="blog_detail_zk_collection" class="un-collection" data-report-click="{&quot;mod&quot;:&quot;popu_823&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4232&quot;,&quot;ab&quot;:&quot;new&quot;}"> <img class="article-collect-img article-heard-img un-collect-status isdefault" style="display:inline-block" src="http://toolman.ddnsfree.com:8585/csdnimg/release/blogv2/dist/pc/img/tobarCollect2.png" alt=""> <img class="article-collect-img article-heard-img collect-status isactive" style="display:none" src="http://toolman.ddnsfree.com:8585/csdnimg/release/blogv2/dist/pc/img/tobarCollectionActive2.png" alt=""> <span class="name">收藏</span> <span class="get-collection"> 13 </span> </a>
+            <div class="read-count-box is-like"><img class="article-read-img article-heard-img" style="display:none" id="is-like-imgactive-new" src="http://toolman.ddnsfree.com:8585/csdnimg/release/blogv2/dist/pc/img/newHeart2023Active.png" alt=""> <img class="article-read-img article-heard-img" style="display:block" id="is-like-img-new" src="http://toolman.ddnsfree.com:8585/csdnimg/release/blogv2/dist/pc/img/newHeart2023Black.png" alt=""> <span class="read-count" id="blog-digg-num">点赞数 2 </span></div></div></div></div><div class="blog-tags-box"><div class="tags-box artic-tag-box"><span class="label">分类专栏：</span> <a class="tag-link" href="https://blog.csdn.net/q1143910315/category_9997075.html" target="_blank" rel="noopener">socket</a> <span class="label">文章标签：</span> <a rel="nofollow" data-report-click="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;socket&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;socket\&quot;}&quot;}" class="tag-link" href="https://so.csdn.net/so/search/s.do?q=socket&amp;t=all&amp;o=vip&amp;s=&amp;l=&amp;f=&amp;viparticle=" target="_blank">socket</a> <a rel="nofollow" data-report-click="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;c#&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;c#\&quot;}&quot;}" class="tag-link" href="https://so.csdn.net/so/search/s.do?q=c%23&amp;t=all&amp;o=vip&amp;s=&amp;l=&amp;f=&amp;viparticle=" target="_blank">c#</a> <a rel="nofollow" data-report-click="{&quot;mod&quot;:&quot;popu_626&quot;,&quot;spm&quot;:&quot;1001.2101.3001.4223&quot;,&quot;strategy&quot;:&quot;网络通信&quot;,&quot;ab&quot;:&quot;new&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;网络通信\&quot;}&quot;}" class="tag-link" href="https://so.csdn.net/so/search/s.do?q=%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1&amp;t=all&amp;o=vip&amp;s=&amp;l=&amp;f=&amp;viparticle=" target="_blank">网络通信</a></div></div><div class="slide-content-box"><div class="article-copyright"><div class="creativecommons">
+            版权声明：本文为博主原创文章，遵循<a href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener"> CC 4.0 BY-SA </a>版权协议，转载请附上原文出处链接和本声明。</div><div class="article-source-link">
+            本文链接：<a href="https://blog.csdn.net/q1143910315/article/details/106065788" target="_blank">https://blog.csdn.net/q1143910315/article/details/106065788</a></div></div></div><div class="operating"><a class="href-article-edit slide-toggle">版权</a></div></div></div></div><div id="blogHuaweiyunAdvert"></div>
+      <article class="baidu_pl"><div id="article_content" class="article_content clearfix">
+        <link rel="stylesheet" href="http://toolman.ddnsfree.com:8585/csdnimg/release/blogv2/dist/mdeditor/css/editerView/kdoc_html_views-1a98987dfd.css">
+        <link rel="stylesheet" href="http://toolman.ddnsfree.com:8585/csdnimg/release/blogv2/dist/mdeditor/css/editerView/ck_htmledit_views-044f2cf1dc.css"><div id="content_views" class="htmledit_views">
+         <p>用System.Net.Sockets.Socket类实现tcp通信并不简单，需要大量代码去实现，但其接近底层而可以发挥更高的效率，本文的目标是实现高性能的套接字客户端，否则没有使用Socket的必要，而应该使用更为简单易用的System.Net.Sockets.TcpClient</p>
+         <p>首先是参考资料，第一当然是微软的文档（<a href="https://docs.microsoft.com/zh-cn/dotnet/api/system.net.sockets.socket?view=netcore-3.1" rel="nofollow">https://docs.microsoft.com/zh-cn/dotnet/api/system.net.sockets.socket?view=netcore-3.1</a>），其次是其他人写的代码<a href="https://www.iteye.com/blog/freshflower-2285286">https://www.iteye.com/blog/freshflower-2285286</a>（C#SocketAsyncEventArgs实现高效能多并发TCPSocket通信 (客户端实现），有没有觉得本文的标题很像这篇文章？其实不然，本文采用与该作者不同的思路去写，实际代码完全不同，有雷同部分只是必须这么写而已。</p>
+         <pre class="set-code-show"><code class="language-cs">using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+
+namespace CommonCode.CCnetwork {
+    public class CCSocketClient {
+        public delegate void OnConnectedEvent(bool connected);
+        public delegate void OnReceivePackageEvent(int signal, byte[] buffer);
+        public delegate void OnConnectionBreakEvent();
+        public delegate void OnSocketExceptionEvent(SocketException socketException);
+        public OnConnectedEvent onConnectedEvent;
+        public OnReceivePackageEvent onReceivePackageEvent;
+        public OnConnectionBreakEvent onConnectionBreakEvent;
+        public OnSocketExceptionEvent onSocketExceptionEvent;
+        private Socket socket;
+        private readonly SocketAsyncEventArgs receiveEventArgs;
+        private readonly SocketAsyncEventArgs[] sendEventArgs = new SocketAsyncEventArgs[] { new SocketAsyncEventArgs(), new SocketAsyncEventArgs() };
+        private readonly byte[] recvBuffer = new byte[255];
+        private readonly byte[] sendBuffer = new byte[255];
+        private readonly List&lt;byte&gt; recvData = new List&lt;byte&gt;();
+        private readonly List&lt;byte&gt; sendData = new List&lt;byte&gt;();
+        private byte state = 0;
+        public CCSocketClient() {
+            if (!Socket.OSSupportsIPv4) {
+                throw new NotSupportedException("系统不支持IPv4网络！");
+            }
+            receiveEventArgs = new SocketAsyncEventArgs();
+            receiveEventArgs.SetBuffer(recvBuffer, 0, recvBuffer.Length);
+            receiveEventArgs.Completed += ReceiveEventArgs_Completed;
+            sendEventArgs[0].Completed += SendEventArgs_Completed; ;
+            sendEventArgs[1].Completed += SendEventArgs_Completed; ;
+        }
+        public void Connect(string host, int port) {
+            try {
+                IPHostEntry entry = Dns.GetHostEntry(host);
+                if (entry != null &amp;&amp; entry.AddressList != null) {
+                    for (int AddressListIndex = 0; AddressListIndex &lt; entry.AddressList.Length; AddressListIndex++) {
+                        if (entry.AddressList[AddressListIndex].AddressFamily == AddressFamily.InterNetwork) {
+                            socket?.Close();
+                            socket?.Dispose();
+                            socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                            SocketAsyncEventArgs connectEventArgs = new SocketAsyncEventArgs();
+                            connectEventArgs.Completed += ConnectEventArgs_Completed;
+                            connectEventArgs.RemoteEndPoint = new IPEndPoint(entry.AddressList[AddressListIndex], port);
+                            if (!socket.ConnectAsync(connectEventArgs)) {
+                                ConnectEventArgs_Completed(socket, connectEventArgs);
+                            }
+                            break;
+                        }
+                    }
+                }
+            } catch (SocketException se) {
+                onConnectedEvent?.Invoke(false);
+                onSocketExceptionEvent?.Invoke(se);
+            }
+        }
+        public void SendPackage(int signal, byte[] data) {
+            if (data != null) {
+                SendPackage(signal, data, 0, data.Length);
+            } else {
+                SendPackage(signal, null, 0, 0);
+            }
+        }
+        public void SendPackage(int signal, byte[] data, int offset, int count) {
+            lock (sendData) {
+                try {
+                    int len = count + 4;
+                    if ((state &amp; 0b10) == 0) {
+                        state |= 0b10;
+                        sendBuffer[0] = (byte)(len &amp; 0xFF);
+                        sendBuffer[1] = (byte)((len &gt;&gt; 8) &amp; 0xFF);
+                        sendBuffer[2] = (byte)((len &gt;&gt; 16) &amp; 0xFF);
+                        sendBuffer[3] = (byte)((len &gt;&gt; 24) &amp; 0xFF);
+                        sendBuffer[4] = (byte)(signal &amp; 0xFF);
+                        sendBuffer[5] = (byte)((signal &gt;&gt; 8) &amp; 0xFF);
+                        sendBuffer[6] = (byte)((signal &gt;&gt; 16) &amp; 0xFF);
+                        sendBuffer[7] = (byte)((signal &gt;&gt; 24) &amp; 0xFF);
+                        for (int i = 0; i &lt; count; i++) {
+                            if (i + 8 &lt; sendBuffer.Length) {
+                                sendBuffer[i + 8] = data[i + offset];
+                            } else {
+                                sendData.Add(data[i + offset]);
+                            }
+                        }
+                        sendEventArgs[state &amp; 1].SetBuffer(sendBuffer, 0, count);
+                        if (!socket.SendAsync(sendEventArgs[state &amp; 1])) {
+                            SendEventArgs_Completed(socket, sendEventArgs[state &amp; 1]);
+                        }
+                    } else {
+                        sendData.Add((byte)(len &amp; 0xFF));
+                        sendData.Add((byte)((len &gt;&gt; 8) &amp; 0xFF));
+                        sendData.Add((byte)((len &gt;&gt; 16) &amp; 0xFF));
+                        sendData.Add((byte)((len &gt;&gt; 24) &amp; 0xFF));
+                        sendData.Add((byte)(signal &amp; 0xFF));
+                        sendData.Add((byte)((signal &gt;&gt; 8) &amp; 0xFF));
+                        sendData.Add((byte)((signal &gt;&gt; 16) &amp; 0xFF));
+                        sendData.Add((byte)((signal &gt;&gt; 24) &amp; 0xFF));
+                        for (int i = 0; i &lt; count; i++) {
+                            sendData.Add(data[i + offset]);
+                        }
+                    }
+                } catch (SocketException se) {
+                    socket.Close();
+                    sendData.Clear();
+                    onConnectionBreakEvent?.Invoke();
+                    onSocketExceptionEvent?.Invoke(se);
+                }
+            }
+        }
+        private void ConnectEventArgs_Completed(object sender, SocketAsyncEventArgs e) {
+            if (sender is Socket s) {
+                try {
+                    onConnectedEvent?.Invoke(s.Connected);
+                    if (s.Connected &amp;&amp; !socket.ReceiveAsync(receiveEventArgs)) {
+                        ReceiveEventArgs_Completed(socket, receiveEventArgs);
+                    }
+                    e.Dispose();
+                } catch (SocketException se) {
+                    s?.Close();
+                    onConnectionBreakEvent?.Invoke();
+                    onSocketExceptionEvent?.Invoke(se);
+                }
+            }
+
+        }
+        private void ReceiveEventArgs_Completed(object sender, SocketAsyncEventArgs e) {
+            if (sender is Socket s) {
+                try {
+                    int len = e.BytesTransferred;
+                    if (len &gt; 0 &amp;&amp; e.SocketError == SocketError.Success) {
+                        for (int i = 0; i &lt; len; i++) {
+                            recvData.Add(recvBuffer[i]);
+                        }
+                        while (recvData.Count &gt;= 8) {
+                            int dataLen = recvData[0] | (recvData[1] &gt;&gt; 8) | (recvData[2] &gt;&gt; 16) | (recvData[3] &gt;&gt; 24);
+                            if (recvData.Count - 4 &gt;= dataLen) {
+                                int signal = recvData[4] | (recvData[5] &gt;&gt; 8) | (recvData[6] &gt;&gt; 16) | (recvData[7] &gt;&gt; 24);
+                                onReceivePackageEvent?.Invoke(signal, recvData.GetRange(8, dataLen - 4).ToArray());
+                                recvData.RemoveRange(0, dataLen + 4);
+                            } else {
+                                break;
+                            }
+                        }
+                        if (!s.ReceiveAsync(receiveEventArgs)) {
+                            ReceiveEventArgs_Completed(s, e);
+                        }
+                    } else {
+                        s.Close();
+                        onConnectionBreakEvent?.Invoke();
+                    }
+                } catch (SocketException se) {
+                    s.Close();
+                    onConnectionBreakEvent?.Invoke();
+                    onSocketExceptionEvent?.Invoke(se);
+                }
+            }
+        }
+        private void SendEventArgs_Completed(object sender, SocketAsyncEventArgs e) {
+            lock (sendData) {
+                if (sender is Socket s) {
+                    try {
+                        if (e.SocketError == SocketError.Success) {
+                            int len = sendData.Count;
+                            if (len &gt; 0) {
+                                if ((state &amp; 0b1) == 0) {
+                                    state |= 0b1;
+                                } else {
+                                    state &amp;= 0b10;
+                                }
+                                int count = len &gt; sendBuffer.Length ? sendBuffer.Length : len;
+                                sendData.CopyTo(0, sendBuffer, 0, count);
+                                sendData.RemoveRange(0, count);
+                                sendEventArgs[state &amp; 1].SetBuffer(sendBuffer, 0, count);
+                                if (!socket.SendAsync(sendEventArgs[state &amp; 1])) {
+                                    SendEventArgs_Completed(socket, sendEventArgs[state &amp; 1]);
+                                }
+                            } else {
+                                state &amp;= 1;
+                            }
+                        } else {
+                            s.Close();
+                            sendData.Clear();
+                            onConnectionBreakEvent?.Invoke();
+                        }
+                    } catch (SocketException se) {
+                        s.Close();
+                        sendData.Clear();
+                        onConnectionBreakEvent?.Invoke();
+                        onSocketExceptionEvent?.Invoke(se);
+                    }
+                }
+            }
+        }
+    }
+}</code></pre>
+         <p>茫茫代码却没有一行注释？不着急，在这里我会重新描述一下代码构成。</p>
+         <p>这个类一共就暴露了两个方法和四个事件。</p>
+         <p>Connect(string host, int port)</p>
+         <p>这里的host参数，支持主机名、ip地址、域名</p>
+         <p>port参数当然是对方的端口号了</p>
+         <p>你会发现这个方法没有告知连接是否成功，为什么没有告知？socket通信中，连接并不能瞬间完成，甚至在连接无效地址时，还要等待3秒。试想下，你在button的click事件中调用了connect，然后你的程序未响应长达3秒，提示连接失败，用户体验就非常差，为此，这里的connect是异步连接，CCSocketClient会调用onConnectedEvent(bool connected)来异步通知是否连接成功，如果成功，connected为true，反之为false。<strong>但是请注意，如果在onConnectedEvent回调函数中执行大量耗时代码，或没有及时从函数中返回，则可能发生丢包，因为在此回调函数运行过程中，为初始化操作，即在接收数据前必须要处理内容，保证在接收到第一份数据前初始化操作是完成的。如果此处改为异步初始化数据，则可能发生接收到了第一份数据，但初始化操作未完成的情况。</strong></p>
+         <p><strong>请勿在onConnectedEvent回调函数中同步调用Connect，即使连接是失败的，正确的做法应该是使用Task、System.Timers.Timer等，延迟一段时间再调用Connect。如果连接是成功的，同步调用Connect则会抛出套接字已关闭的错误。</strong></p>
+         <p>SendPackage(int signal, byte[] data)</p>
+         <p>SendPackage(int signal, byte[] data, int offset, int count)&nbsp;</p>
+         <p>这个函数是线程安全的，可以在多线程中调用。</p>
+         <p>signal参数是指数据标志。在通信过程中，往往需要发送多种数据，signal就是用来区分数据意义的。比如，制作一个登录的客户端，首先要发送程序版本以验证版本是否过时，此时可以指定signal为0。服务器接收到的数据signal为0时，数据内容是程序版本。然后程序要登录服务器，需要发送账号密码验证，此时可以指定signal为1。当服务器接收到数据判断signal为1时，则数据内容是账号密码，再去解密数据得到请求登录的账号密码。</p>
+         <p>data就是被发送的数据</p>
+         <p>offset就是data的起始索引</p>
+         <p>count就是从data中要发送的字节数</p>
+         <p>这里并没有发送数据完毕的回调函数。如果发送大数据怎么判断可以发送下一份大数据呢？通常做法是，发送数据的第一个小部分，服务器接收完毕后发送请求第二个小部分，客户端接收到服务器数据再发送第二个小部分。如果想充分利用网络，请使用多个端口，多个CCSocketClient去发送。<strong>在无法多端口通信的情况下或者不喜欢多端口，循环调用SendPackage（多份小数据），直接调用SendPackage（单份大数据），会造成内存使用率上升，数据堵塞（由其他线程发起的SendPackage，必须等到前面的数据发送完毕才会发送）。举例：如果用SendPackage发送一个1G文件，无论使用for逐部分发送，还是将文件数据直接储存为byte[]，SendPackage都会尽快执行完毕，但程序内存可能涨至2G（1G为调用函数的数据，1G为socket缓存的数据）。即使发送完毕，关闭了文件流，socket内可能仍然保留了1G缓存。而且在文件数据发送完毕前，调用SendPackage都不会发送数据，因为在发送文件数据后调用SendPackage的数据，必须等到文件数据发送完毕才会被发送。</strong></p>
+         <p>这里说明一下SendPackage发送的原始数据格式：</p>
+         <figure class="image"><img alt="sendpack数据格式" src="http://toolman.ddnsfree.com:8585/csdnimg/img-blog/2020051201380177.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ExMTQzOTEwMzE1,size_16,color_FFFFFF,t_70">
+          <figcaption>
+           sendpackage发送的实际格式
+          </figcaption>
+         </figure>
+         <p>由此图也同时可以看出，被发送的data长度不能超过2G减4字节。即使发送null数据，也至少有8字节，存放的数据区长度的值不可能是0，1，2，3。</p>
+         <p>onReceivePackageEvent</p>
+         <p>回调函数原型：void OnReceivePackageEvent(int signal, byte[] buffer);</p>
+         <p>接收数据的回调函数，使用+=将自己的方法添加进此回调。在回调函数中用switch（signal），在每个case处理数据buffer。</p>
+         <p>回调线程不是UI线程，不能在回调函数中直接更新UI，不能在回调函数中长时间处理数据，包括sleep等。如果在回调里长时间处理数据可能会造成丢包，实在需要长时间处理的情况下，使用Task创建新线程处理。</p>
+         <p>接收的数据必须严格按照上诉发送的数据格式，否则无法正确处理。</p>
+         <p>onConnectionBreakEvent</p>
+         <p>回调函数原型：void OnConnectionBreakEvent();</p>
+         <p>当连接被主动断开时，执行此回调。</p>
+         <p>onSocketExceptionEvent</p>
+         <p>回调函数原型：void OnSocketExceptionEvent(System.Net.Sockets.SocketException socketException)</p>
+         <p>当发送套接字错误时，执行此回调。在执行此回调之前，连接必定已断开。</p>
+         <h3>深入探讨</h3>
+         <p>这里具体讲述为代码实际实现方法。</p>
+         <p>本人以这些观点和想法来编写此代码（仅代表本人观点，不代表事实，更不代表所有情况都如以下）：</p>
+         <p>1、创建一个新内存时间大于拷贝一段内存时间。（在选择“数据是使用新内存，还是使用拷贝到已得到的内存”的问题上，因创建一个新内存耗时长于拷贝，于是尽量使用后者）</p>
+         <p>2、所有方法必须尽快调用结束，以适应高度要求时间的线程。（因此SendPackage分步发送大数据，会在数据被发送前就已返回，造成其他线程无法中间插入发送队列）</p>
+         <p>在代码19行使用SocketAsyncEventArgs数组，是因为发送数据的complete回调中，不能调用SocketAsyncEventArgs.SetBuffer，基于不创建新内存原则，使用数组，交替发送数据。</p>
+         <p>在代码70行中，(state &amp; 0b10) == 0表示上次发送数据已发送完毕。可以用此标志判断socket是否处于可发送数据状态（空闲）</p>
+         <p>在代码180行中，设置state的标志为0，即令(state &amp; 0b10) == 0成立，表示数据发送完毕，同时可在此处增加数据发送完毕的回调函数，但此回调必须异步执行（创建新线程），不能在complete事件里直接调用sendpackage。此时可解决发送大文件期间，其他线程的数据被阻塞问题。解决方式为：发送大文件的一部分后，等待发送完毕后（即(state &amp; 0b10) == 0成立），再发送下一部分。而其它线程不等待发送完毕，直接调用sendpackage，将自己的数据加入发送队列。</p>
+         <p>因ReceiveEventArgs_Completed和SendEventArgs_Completed不在调用方可控范围内，这里仅做尽量减少运算处理，不会导致调用方线程被阻塞，但在这两个函数的回调内，执行用户回调函数时间过长会延长接收、发送数据。如果在接收时间过长会导致丢包。在134行和140行，会产生内存分配，在134行处的内存分配仅发生在recvData的Capacity长度不够。在174行，可能发生大量数据拷贝延迟问题，特别是在sendData.Count远远大于sendBuffer.Length的时候，如果发生此问题，除了应该设置21行处更大的发送粒度外，还应检查代码中是否有大量调用sendpackage，致使发送缓存远大于发送粒度。</p>
+         <p>在代码84行以及92-102行，可能会发生内存分配，阻塞调用线程。在要求较高情况下，可设置21行处的发送数据粒度，可设置23行处，发送数据缓存的Capacity以事先分配内存，判断socket空闲（即(state &amp; 0b10) == 0成立）都可避免调用SendPackage时，因内存分配阻塞调用方。</p>
+         <p>在上述“SendPackage发送的原始数据格式”中可以得知，每个数据第一个帧不可能是以0，1，2，3开头，因为后面的signal就至少有四字节。可以利用这点扩展其他数据格式，比如在137行判断dataLen是不是为0，1，2，3，然后用其他任意方法解析接下来的数据。这样你可以改写一个没有signal的数据格式，同时兼容有signal的数据格式。</p>
+         <p><strong>因服务端代码未编写完成，上述代码未经测试，有问题可以联系我。</strong></p></div></div>
+      </article></div>
+    </main></div><div class="recommend-right align-items-stretch clearfix" id="rightAside" data-type="recommend"></div></div>
+  <link rel="stylesheet" href="http://toolman.ddnsfree.com:8585/csdnimg/release/blog_editor_html/release1.6.12/ckeditor/plugins/chart/chart.css">
+  <link rel="stylesheet" href="http://toolman.ddnsfree.com:8585/csdnimg/release/blog_editor_html/release1.6.12/ckeditor/plugins/codesnippet/lib/highlight/styles/atom-one-light.css">
+ </body> 
+</html>
