@@ -4,11 +4,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace AsyncSocketServer
+namespace Net
 {
     public class AsyncSocketServer
     {
-        private Socket listenSocket;
+        private Socket Core;
         
         private int m_numConnections; //最大支持连接个数
         private int m_receiveBufferSize; //每个连接接收缓存大小
@@ -60,9 +60,9 @@ namespace AsyncSocketServer
 
         public void Start(IPEndPoint localEndPoint)
         {
-            listenSocket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            listenSocket.Bind(localEndPoint);
-            listenSocket.Listen(m_numConnections);
+            Core = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            Core.Bind(localEndPoint);
+            Core.Listen(m_numConnections);
             Program.Logger.InfoFormat("Start listen socket {0} success", localEndPoint.ToString());
             //for (int i = 0; i < 64; i++) //不能循环投递多次AcceptAsync，会造成只接收8000连接后不接收连接了
             StartAccept(null);
@@ -82,7 +82,7 @@ namespace AsyncSocketServer
             }
 
             m_maxNumberAcceptedClients.WaitOne(); //获取信号量
-            bool willRaiseEvent = listenSocket.AcceptAsync(acceptEventArgs);
+            bool willRaiseEvent = Core.AcceptAsync(acceptEventArgs);
             if (!willRaiseEvent)
             {
                 ProcessAccept(acceptEventArgs);

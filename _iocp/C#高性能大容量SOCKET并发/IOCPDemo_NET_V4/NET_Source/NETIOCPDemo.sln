@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34714.143
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NETIOCPSvr", "NETIOCPSvr\NETIOCPSvr.csproj", "{119D500C-48AA-4C40-8189-0783653F8086}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NETUploadClient", "NETUploadClient\NETUploadClient.csproj", "{1EA7CDFC-C506-4598-8E32-C256437D7DA4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IOCPServer", "IOCPServer\IOCPServer.csproj", "{919D36F4-B256-4109-87F4-5886F4DA7DA9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocalUtilities", "..\..\..\..\..\LocalUtilities\LocalUtilities.csproj", "{5CD43DB2-FD2C-4F0D-9625-6C5C4FA86340}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,8 +41,35 @@ Global
 		{1EA7CDFC-C506-4598-8E32-C256437D7DA4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{1EA7CDFC-C506-4598-8E32-C256437D7DA4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{1EA7CDFC-C506-4598-8E32-C256437D7DA4}.Release|x86.ActiveCfg = Release|Any CPU
+		{919D36F4-B256-4109-87F4-5886F4DA7DA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{919D36F4-B256-4109-87F4-5886F4DA7DA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{919D36F4-B256-4109-87F4-5886F4DA7DA9}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{919D36F4-B256-4109-87F4-5886F4DA7DA9}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{919D36F4-B256-4109-87F4-5886F4DA7DA9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{919D36F4-B256-4109-87F4-5886F4DA7DA9}.Debug|x86.Build.0 = Debug|Any CPU
+		{919D36F4-B256-4109-87F4-5886F4DA7DA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{919D36F4-B256-4109-87F4-5886F4DA7DA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{919D36F4-B256-4109-87F4-5886F4DA7DA9}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{919D36F4-B256-4109-87F4-5886F4DA7DA9}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{919D36F4-B256-4109-87F4-5886F4DA7DA9}.Release|x86.ActiveCfg = Release|Any CPU
+		{919D36F4-B256-4109-87F4-5886F4DA7DA9}.Release|x86.Build.0 = Release|Any CPU
+		{5CD43DB2-FD2C-4F0D-9625-6C5C4FA86340}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CD43DB2-FD2C-4F0D-9625-6C5C4FA86340}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CD43DB2-FD2C-4F0D-9625-6C5C4FA86340}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{5CD43DB2-FD2C-4F0D-9625-6C5C4FA86340}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{5CD43DB2-FD2C-4F0D-9625-6C5C4FA86340}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5CD43DB2-FD2C-4F0D-9625-6C5C4FA86340}.Debug|x86.Build.0 = Debug|Any CPU
+		{5CD43DB2-FD2C-4F0D-9625-6C5C4FA86340}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CD43DB2-FD2C-4F0D-9625-6C5C4FA86340}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CD43DB2-FD2C-4F0D-9625-6C5C4FA86340}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{5CD43DB2-FD2C-4F0D-9625-6C5C4FA86340}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{5CD43DB2-FD2C-4F0D-9625-6C5C4FA86340}.Release|x86.ActiveCfg = Release|Any CPU
+		{5CD43DB2-FD2C-4F0D-9625-6C5C4FA86340}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2F580DCB-13BA-44AF-90FE-04F33B6E1B84}
 	EndGlobalSection
 EndGlobal

@@ -22,12 +22,12 @@ namespace NETUploadClient.SyncSocketProtocolCore
         public bool CheckErrorCode()
         {
             int errorCode = 0;
-            m_incomingDataParser.GetValue(AsyncSocketServer.ProtocolKey.Code, ref errorCode);
-            if (errorCode == AsyncSocketServer.ProtocolCode.Success)
+            m_incomingDataParser.GetValue(Net.ProtocolKey.Code, ref errorCode);
+            if (errorCode == Net.ProtocolCode.Success)
                 return true;
             else
             {
-                m_errorString = AsyncSocketServer.ProtocolCode.GetErrorCodeString(errorCode);
+                m_errorString = Net.ProtocolCode.GetErrorCodeString(errorCode);
                 return false;
             }
         }
@@ -38,7 +38,7 @@ namespace NETUploadClient.SyncSocketProtocolCore
             {
                 m_outgoingDataAssembler.Clear();
                 m_outgoingDataAssembler.AddRequest();
-                m_outgoingDataAssembler.AddCommand(AsyncSocketServer.ProtocolKey.Active);
+                m_outgoingDataAssembler.AddCommand(Net.ProtocolKey.Active);
                 SendCommand();
                 bool bSuccess = RecvCommand();
                 if (bSuccess)
@@ -60,9 +60,9 @@ namespace NETUploadClient.SyncSocketProtocolCore
             {
                 m_outgoingDataAssembler.Clear();
                 m_outgoingDataAssembler.AddRequest();
-                m_outgoingDataAssembler.AddCommand(AsyncSocketServer.ProtocolKey.Login);
-                m_outgoingDataAssembler.AddValue(AsyncSocketServer.ProtocolKey.UserName, userName);
-                m_outgoingDataAssembler.AddValue(AsyncSocketServer.ProtocolKey.Password, AsyncSocketServer.BasicFunc.MD5String(password));
+                m_outgoingDataAssembler.AddCommand(Net.ProtocolKey.Login);
+                m_outgoingDataAssembler.AddValue(Net.ProtocolKey.UserName, userName);
+                m_outgoingDataAssembler.AddValue(Net.ProtocolKey.Password, Net.BasicFunc.MD5String(password));
                 SendCommand();
                 bool bSuccess = RecvCommand();
                 if (bSuccess)

@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="NETIOCPCommon\log4net.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="NETIOCPCommon\log4net.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="ClientDemo\Client.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+
+</Project>

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using NETIOCPCommon;
+using Net;
 
-namespace AsyncSocketServer
+namespace Net
 {
     struct SendBufferPacket
     {

@@ -1,7 +1,7 @@
-﻿using NETIOCPCommon;
+﻿using Net;
 using System;
 
-namespace AsyncSocketServer
+namespace Net
 {
     public class BaseSocketProtocol : AsyncSocketInvokeElement
     {

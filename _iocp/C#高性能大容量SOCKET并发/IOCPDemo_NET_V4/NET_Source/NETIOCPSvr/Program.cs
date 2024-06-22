@@ -11,7 +11,7 @@ using System.IO;
 
 [assembly: log4net.Config.XmlConfigurator(Watch = true)]
 
-namespace AsyncSocketServer
+namespace Net
 {    
     public class Program
     {

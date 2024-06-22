@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace AsyncSocketServer
+namespace Net
 {
     class DaemonThread : Object
     {

@@ -1,5 +1,5 @@
 ﻿
-namespace NETIOCPCommon
+namespace Net
 {
     public class ProtocolConst
     {

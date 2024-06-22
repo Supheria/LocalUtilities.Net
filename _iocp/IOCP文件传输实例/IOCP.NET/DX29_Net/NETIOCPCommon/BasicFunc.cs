@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 
-namespace NETIOCPCommon
+namespace Net
 {
     public class BasicFunc
     {

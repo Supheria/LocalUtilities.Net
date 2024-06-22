@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace AsyncSocketServer
+namespace Net
 {
     class DaemonThread : Object
     {

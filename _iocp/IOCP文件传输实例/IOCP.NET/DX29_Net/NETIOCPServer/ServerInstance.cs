@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 using System.Net;
-namespace AsyncSocketServer
+namespace Net
 {
     public static class ServerInstance
     {

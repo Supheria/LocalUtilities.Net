@@ -1,11 +1,11 @@
 ﻿using log4net;
 using NETIOCPClient.AsyncSocketCore;
-using NETIOCPCommon;
+using Net;
 using System;
 
 namespace NETIOCPClient.AsyncSocketProtocolCore
 {
-    public class AsyncClientBaseSocket : AsyncSocketInvokeElement
+    public class AsyncClientBaseSocket : AsyncSocketCore.AsyncSocketInvokeElement
     {
         public static ILog Logger;
         protected string m_errorString;

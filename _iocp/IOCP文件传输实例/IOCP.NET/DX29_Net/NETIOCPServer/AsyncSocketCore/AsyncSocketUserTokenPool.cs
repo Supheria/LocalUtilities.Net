@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AsyncSocketServer
+namespace Net
 {
     public class AsyncSocketUserTokenPool
     {

@@ -1,9 +1,9 @@
-﻿using NETIOCPCommon;
+﻿using Net;
 using System;
 using System.Net.Sockets;
 
 
-namespace AsyncSocketServer
+namespace Net
 {
     public class AsyncSocketUserToken
     {

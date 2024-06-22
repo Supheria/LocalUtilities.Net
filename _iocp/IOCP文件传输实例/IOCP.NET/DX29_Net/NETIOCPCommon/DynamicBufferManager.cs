@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace NETIOCPCommon
+namespace Net
 {
     public class DynamicBufferManager
     {

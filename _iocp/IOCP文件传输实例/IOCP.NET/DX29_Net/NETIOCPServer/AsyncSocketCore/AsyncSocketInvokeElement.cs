@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text;
-using NETIOCPCommon;
+using Net;
 
-namespace AsyncSocketServer
+namespace Net
 {
     //异步Socket调用对象，所有的协议处理都从本类继承
     public class AsyncSocketInvokeElement

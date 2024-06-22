@@ -1,5 +1,5 @@
 ﻿using NETIOCPClient.AsyncSocketProtocolCore;
-using NETIOCPCommon;
+using Net;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using log4net;
-using AsyncSocketServer;
+using Net;
 
 namespace NETIOCPClient.AsyncSocketProtocol
 {

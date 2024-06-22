@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace NETIOCPCommon
+namespace Net
 {
     public class IncomingDataParser
     {

@@ -12,7 +12,7 @@ namespace NETUploadClient.SyncSocketProtocol
         public ClientUploadSocket()
             : base()
         {
-            m_protocolFlag = AsyncSocketServer.ProtocolFlag.Upload;
+            m_protocolFlag = Net.ProtocolFlag.Upload;
         }
 
         public bool DoUpload(string dirName, string fileName, ref long fileSize)
@@ -24,9 +24,9 @@ namespace NETUploadClient.SyncSocketProtocol
             {
                 m_outgoingDataAssembler.Clear();
                 m_outgoingDataAssembler.AddRequest();
-                m_outgoingDataAssembler.AddCommand(AsyncSocketServer.ProtocolKey.Upload);
-                m_outgoingDataAssembler.AddValue(AsyncSocketServer.ProtocolKey.DirName, dirName);
-                m_outgoingDataAssembler.AddValue(AsyncSocketServer.ProtocolKey.FileName, fileName);
+                m_outgoingDataAssembler.AddCommand(Net.ProtocolKey.Upload);
+                m_outgoingDataAssembler.AddValue(Net.ProtocolKey.DirName, dirName);
+                m_outgoingDataAssembler.AddValue(Net.ProtocolKey.FileName, fileName);
                 SendCommand();
                 bool bSuccess = RecvCommand();
                 if (bSuccess)
@@ -34,7 +34,7 @@ namespace NETUploadClient.SyncSocketProtocol
                     bSuccess = CheckErrorCode();
                     if (bSuccess)
                     {
-                        bSuccess = m_incomingDataParser.GetValue(AsyncSocketServer.ProtocolKey.FileSize, ref fileSize);
+                        bSuccess = m_incomingDataParser.GetValue(Net.ProtocolKey.FileSize, ref fileSize);
                     }
                     return bSuccess;
                 }
@@ -55,7 +55,7 @@ namespace NETUploadClient.SyncSocketProtocol
             {
                 m_outgoingDataAssembler.Clear();
                 m_outgoingDataAssembler.AddRequest();
-                m_outgoingDataAssembler.AddCommand(AsyncSocketServer.ProtocolKey.Data);
+                m_outgoingDataAssembler.AddCommand(Net.ProtocolKey.Data);
                 SendCommand(buffer, offset, count);
                 return true;
             }
@@ -73,7 +73,7 @@ namespace NETUploadClient.SyncSocketProtocol
             {
                 m_outgoingDataAssembler.Clear();
                 m_outgoingDataAssembler.AddRequest();
-                m_outgoingDataAssembler.AddCommand(AsyncSocketServer.ProtocolKey.Eof);
+                m_outgoingDataAssembler.AddCommand(Net.ProtocolKey.Eof);
                 SendCommand();
                 bool bSuccess = RecvCommand();
                 if (bSuccess)

@@ -7,7 +7,7 @@ using System.IO;
 using log4net.Core;
 using System.Windows.Forms;
 
-namespace AsyncSocketServer
+namespace Net
 {
     public class LogOutputSocketProtocol : BaseSocketProtocol
     {

@@ -5,7 +5,7 @@ using System.Text;
 using System.Net.Sockets;
 using System.IO;
 
-namespace AsyncSocketServer
+namespace Net
 {
     public class RemoteStreamSocketProtocol : BaseSocketProtocol
     {
